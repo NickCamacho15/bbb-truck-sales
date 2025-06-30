@@ -1,0 +1,137 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  username  String   @unique
+  email     String   @unique
+  password  String
+  role      UserRole @default(ADMIN)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("users")
+}
+
+model Truck {
+  id           String      @id @default(cuid())
+  title        String
+  price        Int
+  year         Int
+  make         String
+  model        String
+  trim         String
+  mileage      Int
+  fuelType     String
+  transmission String
+  drivetrain   String
+  color        String
+  vin          String      @unique
+  stockNumber  String      @unique
+  description  String
+  status       TruckStatus @default(AVAILABLE)
+  featured     Boolean     @default(false)
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  images   TruckImage[]
+  features TruckFeature[]
+  inquiries Inquiry[]
+
+  @@map("trucks")
+}
+
+model TruckImage {
+  id        String  @id @default(cuid())
+  truckId   String
+  imageUrl  String
+  isPrimary Boolean @default(false)
+  sortOrder Int     @default(0)
+
+  truck Truck @relation(fields: [truckId], references: [id], onDelete: Cascade)
+
+  @@map("truck_images")
+}
+
+model TruckFeature {
+  id          String @id @default(cuid())
+  truckId     String
+  featureName String
+
+  truck Truck @relation(fields: [truckId], references: [id], onDelete: Cascade)
+
+  @@map("truck_features")
+}
+
+model Inquiry {
+  id          String      @id @default(cuid())
+  truckId     String?
+  name        String
+  email       String
+  phone       String?
+  message     String
+  inquiryType InquiryType @default(GENERAL)
+  status      InquiryStatus @default(NEW)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  truck Truck? @relation(fields: [truckId], references: [id])
+
+  @@map("inquiries")
+}
+
+model FinancingApplication {
+  id            String   @id @default(cuid())
+  firstName     String
+  lastName      String
+  email         String
+  phone         String
+  annualIncome  Int?
+  downPayment   Int?
+  financingType String
+  truckInterest String?
+  additionalInfo String?
+  status        ApplicationStatus @default(PENDING)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@map("financing_applications")
+}
+
+enum UserRole {
+  ADMIN
+  SUPER_ADMIN
+}
+
+enum TruckStatus {
+  AVAILABLE
+  PENDING_SALE
+  SOLD
+}
+
+enum InquiryType {
+  GENERAL
+  SALES
+  TEST_DRIVE
+  FINANCING
+  SERVICE
+}
+
+enum InquiryStatus {
+  NEW
+  CONTACTED
+  CLOSED
+}
+
+enum ApplicationStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  UNDER_REVIEW
+}

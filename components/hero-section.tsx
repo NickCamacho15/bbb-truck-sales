@@ -1,0 +1,77 @@
+"use client"
+
+import { useState } from "react"
+import Link from "next/link"
+import Image from "next/image"
+import { Button } from "@/components/ui/button"
+import { ChevronRight } from "lucide-react"
+
+export function HeroSection() {
+  const [currentSlide, setCurrentSlide] = useState(0)
+
+  const slides = [
+    {
+      image: "/truck-image.jpeg",
+      title: "Triple B Truck Sales",
+      subtitle: "Your Trusted Source for Medium & Light Duty Work Trucks",
+      cta: "Browse Inventory",
+      link: "/inventory",
+    },
+    {
+      image: "/placeholder.svg?height=800&width=1600",
+      title: "Work Truck Specialists",
+      subtitle: "Find the perfect truck for your business needs",
+      cta: "View All Categories",
+      link: "/inventory",
+    },
+    {
+      image: "/placeholder.svg?height=800&width=1600",
+      title: "Quality & Reliability",
+      subtitle: "Medium and light duty trucks built for the job",
+      cta: "Explore Inventory",
+      link: "/inventory",
+    },
+  ]
+
+  return (
+    <section className="relative h-[600px] overflow-hidden">
+      {slides.map((slide, index) => (
+        <div
+          key={index}
+          className={`absolute inset-0 transition-opacity duration-1000 ${
+            index === currentSlide ? "opacity-100" : "opacity-0 pointer-events-none"
+          }`}
+        >
+          <div className="absolute inset-0 bg-black/40 z-10" />
+          <Image
+            src={slide.image || "/placeholder.svg"}
+            alt={slide.title}
+            fill
+            className="object-cover"
+            priority={index === 0}
+          />
+          <div className="relative z-20 h-full flex flex-col justify-center items-center text-center text-white px-4">
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-4">{slide.title}</h1>
+            <p className="text-xl md:text-2xl mb-8 max-w-2xl">{slide.subtitle}</p>
+            <Link href={slide.link}>
+              <Button size="lg" className="bg-blue-600 hover:bg-blue-700">
+                {slide.cta} <ChevronRight className="ml-2 h-4 w-4" />
+              </Button>
+            </Link>
+          </div>
+        </div>
+      ))}
+
+      <div className="absolute bottom-6 left-0 right-0 z-30 flex justify-center gap-2">
+        {slides.map((_, index) => (
+          <button
+            key={index}
+            onClick={() => setCurrentSlide(index)}
+            className={`w-3 h-3 rounded-full ${index === currentSlide ? "bg-white" : "bg-white/50"}`}
+            aria-label={`Go to slide ${index + 1}`}
+          />
+        ))}
+      </div>
+    </section>
+  )
+}
