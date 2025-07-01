@@ -10,8 +10,8 @@ import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { AdminHeader } from "@/components/admin-header"
-import { AdminSidebar } from "@/components/admin-sidebar"
-import { ArrowLeft, Check, ChevronRight, ImageIcon, Info, ListChecks, Save, Upload, X } from "lucide-react"
+import { ArrowLeft, Check, ChevronRight, ImageIcon, Info, ListChecks, Save, Upload, X, Plus } from "lucide-react"
+import { ImageUpload } from "@/components/image-upload"
 
 export default function NewTruckPage() {
   const router = useRouter()
@@ -19,17 +19,65 @@ export default function NewTruckPage() {
   const [images, setImages] = useState<string[]>([])
   const [features, setFeatures] = useState<string[]>([])
   const [newFeature, setNewFeature] = useState("")
+  const [isSubmitting, setIsSubmitting] = useState(false)
   const [formValid, setFormValid] = useState({
     details: false,
     images: false,
     features: false,
   })
 
+  // Form data state for validation
+  const [formData, setFormData] = useState({
+    title: "",
+    price: "",
+    year: "",
+    make: "",
+    model: "",
+    trim: "",
+    mileage: "",
+    fuelType: "",
+    transmission: "",
+    drivetrain: "",
+    color: "",
+    vin: "",
+    stockNumber: "",
+    description: ""
+  })
+
+  // Feature suggestions organized by category
+  const featureSuggestions = {
+    Technology: [
+      "SYNC 4 Infotainment System",
+      "360-Degree Camera",
+      "Wireless Phone Charging",
+      "Apple CarPlay/Android Auto"
+    ],
+    Safety: [
+      "Pre-Collision Assist",
+      "Blind Spot Monitoring", 
+      "Lane-Keeping System",
+      "Adaptive Cruise Control"
+    ],
+    Comfort: [
+      "Heated/Cooled Seats",
+      "Dual-Zone Climate Control",
+      "Power-Adjustable Seats",
+      "Remote Start"
+    ],
+    Capability: [
+      "Pro Power Onboard",
+      "Trailer Tow Package",
+      "Bed Liner",
+      "Running Boards"
+    ]
+  }
+
   // Form validation
   const validateDetailsTab = () => {
-    // This would check if all required fields are filled
-    setFormValid((prev) => ({ ...prev, details: true }))
-    return true
+    const requiredFields = ['title', 'price', 'year', 'make', 'model', 'trim', 'mileage', 'fuelType', 'transmission', 'drivetrain', 'color', 'vin', 'stockNumber', 'description']
+    const isValid = requiredFields.every(field => formData[field as keyof typeof formData]?.toString().trim() !== "")
+    setFormValid((prev) => ({ ...prev, details: isValid }))
+    return isValid
   }
 
   const validateImagesTab = () => {
@@ -79,21 +127,18 @@ export default function NewTruckPage() {
     else if (activeTab === "review") setActiveTab("features")
   }
 
-  const handleAddImage = () => {
-    // In a real app, this would handle image upload
-    // For demo, we'll add a placeholder
-    setImages([...images, `/placeholder.svg?height=600&width=800&text=Image ${images.length + 1}`])
+  const handleInputChange = (field: string, value: string) => {
+    setFormData(prev => ({ ...prev, [field]: value }))
   }
 
-  const handleRemoveImage = (index: number) => {
-    const newImages = [...images]
-    newImages.splice(index, 1)
+  const handleImagesChange = (newImages: string[]) => {
     setImages(newImages)
   }
 
-  const handleAddFeature = () => {
-    if (newFeature.trim()) {
-      setFeatures([...features, newFeature.trim()])
+  const handleAddFeature = (feature?: string) => {
+    const featureToAdd = feature || newFeature.trim()
+    if (featureToAdd && !features.includes(featureToAdd)) {
+      setFeatures([...features, featureToAdd])
       setNewFeature("")
     }
   }
@@ -104,61 +149,113 @@ export default function NewTruckPage() {
     setFeatures(newFeatures)
   }
 
-  const handleSubmit = () => {
-    // In a real app, this would save the truck to the database
-    alert("Truck listing created successfully!")
-    router.push("/admin/inventory")
+  const handleSubmit = async () => {
+    if (!formValid.details || !formValid.images || !formValid.features) {
+      alert("Please complete all required sections before submitting.")
+      return
+    }
+
+    setIsSubmitting(true)
+    
+    try {
+      // Prepare the data for submission
+      const truckData = {
+        title: formData.title,
+        price: Number(formData.price),
+        year: Number(formData.year),
+        make: formData.make,
+        model: formData.model,
+        trim: formData.trim,
+        mileage: Number(formData.mileage),
+        fuelType: formData.fuelType,
+        transmission: formData.transmission,
+        drivetrain: formData.drivetrain,
+        color: formData.color,
+        vin: formData.vin,
+        stockNumber: formData.stockNumber,
+        description: formData.description,
+        status: "AVAILABLE" as const,
+        featured: false,
+        images: images,
+        features: features
+      }
+
+      const response = await fetch('/api/trucks', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(truckData),
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Failed to create truck listing')
+      }
+
+      const createdTruck = await response.json()
+      
+      // Success! Redirect to the inventory page
+      alert("Truck listing created successfully!")
+      router.push("/admin/inventory")
+      
+    } catch (error) {
+      console.error('Error creating truck:', error)
+      alert(`Failed to create truck listing: ${error instanceof Error ? error.message : 'Unknown error'}`)
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   return (
-    <div className="grid min-h-screen w-full lg:grid-cols-[280px_1fr]">
-      <AdminSidebar activePage="inventory" />
+    <div className="flex flex-col min-h-screen">
+      <AdminHeader title="Add New Truck" />
+      
+      <div className="flex-1 p-4 space-y-4">
+        <div className="flex items-center mb-6">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => router.push("/admin/inventory")}
+            className="gap-1"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            <span>Back to Inventory</span>
+          </Button>
+        </div>
 
-      <div className="flex flex-col">
-        <AdminHeader title="Add New Truck" />
-
-        <main className="flex-1 p-6">
-          <div className="mb-6">
-            <Button
-              variant="ghost"
-              className="flex items-center text-muted-foreground"
-              onClick={() => router.push("/admin/inventory")}
-            >
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              Back to Inventory
-            </Button>
-          </div>
-
-          <div className="mb-8">
+        <div className="space-y-4">
+          <div>
             <h1 className="text-2xl font-bold">Add New Truck Listing</h1>
             <p className="text-muted-foreground">
               Create a new truck listing with detailed information, images, and features.
             </p>
           </div>
 
-          <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-4">
-            <TabsList className="grid w-full grid-cols-4">
+          <Tabs defaultValue="details" value={activeTab} onValueChange={handleTabChange}>
+            <TabsList className="grid grid-cols-4 max-w-2xl mb-6">
               <TabsTrigger value="details" className="flex items-center gap-2">
                 <Info className="h-4 w-4" />
-                <span className="hidden sm:inline">Basic Details</span>
+                <span className="hidden sm:inline-block">Basic Details</span>
                 <span className="sm:hidden">Details</span>
-                {formValid.details && <Check className="h-4 w-4 text-green-500 ml-auto" />}
+                {formValid.details && <Check className="h-5 w-5 ml-1 text-green-600 flex-shrink-0" />}
               </TabsTrigger>
               <TabsTrigger value="images" className="flex items-center gap-2">
                 <ImageIcon className="h-4 w-4" />
-                <span className="hidden sm:inline">Truck Images</span>
+                <span className="hidden sm:inline-block">Truck Images</span>
                 <span className="sm:hidden">Images</span>
-                {formValid.images && <Check className="h-4 w-4 text-green-500 ml-auto" />}
+                {formValid.images && <Check className="h-5 w-5 ml-1 text-green-600 flex-shrink-0" />}
               </TabsTrigger>
               <TabsTrigger value="features" className="flex items-center gap-2">
                 <ListChecks className="h-4 w-4" />
-                <span className="hidden sm:inline">Features & Specs</span>
+                <span className="hidden sm:inline-block">Features & Specs</span>
                 <span className="sm:hidden">Features</span>
-                {formValid.features && <Check className="h-4 w-4 text-green-500 ml-auto" />}
+                {formValid.features && <Check className="h-5 w-5 ml-1 text-green-600 flex-shrink-0" />}
               </TabsTrigger>
               <TabsTrigger value="review" className="flex items-center gap-2">
-                <Check className="h-4 w-4" />
-                <span>Review</span>
+                <Save className="h-4 w-4" />
+                <span className="hidden sm:inline-block">Review</span>
+                <span className="sm:hidden">Review</span>
               </TabsTrigger>
             </TabsList>
 
@@ -172,63 +269,90 @@ export default function NewTruckPage() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label htmlFor="title">Truck Title</Label>
-                      <Input id="title" placeholder="e.g. 2022 Ford F-150 XLT" required />
+                      <Input 
+                        id="title" 
+                        placeholder="e.g. 2022 Ford F-150 XLT" 
+                        value={formData.title}
+                        onChange={(e) => handleInputChange('title', e.target.value)}
+                        required 
+                      />
                       <p className="text-xs text-muted-foreground">Include year, make, model, and trim</p>
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="price">Price ($)</Label>
-                      <Input id="price" type="number" placeholder="e.g. 42999" required />
+                      <Input 
+                        id="price" 
+                        type="number" 
+                        placeholder="e.g. 42999" 
+                        value={formData.price}
+                        onChange={(e) => handleInputChange('price', e.target.value)}
+                        required 
+                      />
                     </div>
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div className="space-y-2">
                       <Label htmlFor="year">Year</Label>
-                      <Input id="year" type="number" placeholder="e.g. 2022" required />
+                      <Input 
+                        id="year" 
+                        type="number" 
+                        placeholder="e.g. 2022" 
+                        value={formData.year}
+                        onChange={(e) => handleInputChange('year', e.target.value)}
+                        required 
+                      />
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="make">Make</Label>
-                      <Select defaultValue="ford">
-                        <SelectTrigger id="make">
-                          <SelectValue placeholder="Select make" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="ford">Ford</SelectItem>
-                        </SelectContent>
-                      </Select>
+                      <Input 
+                        id="make" 
+                        placeholder="e.g. Ford, Chevrolet, Toyota" 
+                        value={formData.make}
+                        onChange={(e) => handleInputChange('make', e.target.value)}
+                        required 
+                      />
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="model">Model</Label>
-                      <Select>
-                        <SelectTrigger id="model">
-                          <SelectValue placeholder="Select model" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="f-150">F-150</SelectItem>
-                          <SelectItem value="f-250">F-250</SelectItem>
-                          <SelectItem value="f-350">F-350</SelectItem>
-                          <SelectItem value="ranger">Ranger</SelectItem>
-                          <SelectItem value="maverick">Maverick</SelectItem>
-                        </SelectContent>
-                      </Select>
+                      <Input 
+                        id="model" 
+                        placeholder="e.g. F-150, Silverado, Tundra" 
+                        value={formData.model}
+                        onChange={(e) => handleInputChange('model', e.target.value)}
+                        required 
+                      />
                     </div>
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label htmlFor="trim">Trim Level</Label>
-                      <Input id="trim" placeholder="e.g. XLT, Lariat, King Ranch" required />
+                      <Input 
+                        id="trim" 
+                        placeholder="e.g. XLT, Lariat, King Ranch" 
+                        value={formData.trim}
+                        onChange={(e) => handleInputChange('trim', e.target.value)}
+                        required 
+                      />
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="mileage">Mileage</Label>
-                      <Input id="mileage" type="number" placeholder="e.g. 15420" required />
+                      <Input 
+                        id="mileage" 
+                        type="number" 
+                        placeholder="e.g. 15420" 
+                        value={formData.mileage}
+                        onChange={(e) => handleInputChange('mileage', e.target.value)}
+                        required 
+                      />
                     </div>
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div className="space-y-2">
                       <Label htmlFor="fuel-type">Fuel Type</Label>
-                      <Select>
+                      <Select value={formData.fuelType} onValueChange={(value) => handleInputChange('fuelType', value)}>
                         <SelectTrigger id="fuel-type">
                           <SelectValue placeholder="Select fuel type" />
                         </SelectTrigger>
@@ -242,7 +366,7 @@ export default function NewTruckPage() {
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="transmission">Transmission</Label>
-                      <Select>
+                      <Select value={formData.transmission} onValueChange={(value) => handleInputChange('transmission', value)}>
                         <SelectTrigger id="transmission">
                           <SelectValue placeholder="Select transmission" />
                         </SelectTrigger>
@@ -254,7 +378,7 @@ export default function NewTruckPage() {
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="drivetrain">Drivetrain</Label>
-                      <Select>
+                      <Select value={formData.drivetrain} onValueChange={(value) => handleInputChange('drivetrain', value)}>
                         <SelectTrigger id="drivetrain">
                           <SelectValue placeholder="Select drivetrain" />
                         </SelectTrigger>
@@ -267,14 +391,36 @@ export default function NewTruckPage() {
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div className="space-y-2">
                       <Label htmlFor="color">Exterior Color</Label>
-                      <Input id="color" placeholder="e.g. Oxford White" required />
+                      <Input 
+                        id="color" 
+                        placeholder="e.g. Oxford White" 
+                        value={formData.color}
+                        onChange={(e) => handleInputChange('color', e.target.value)}
+                        required 
+                      />
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="vin">VIN</Label>
-                      <Input id="vin" placeholder="e.g. 1FTEW1EP5NKD12345" required />
+                      <Input 
+                        id="vin" 
+                        placeholder="e.g. 1FTEW1EP5NKD12345" 
+                        value={formData.vin}
+                        onChange={(e) => handleInputChange('vin', e.target.value)}
+                        required 
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="stock-number">Stock Number</Label>
+                      <Input
+                        id="stock-number"
+                        placeholder="e.g. STK12345"
+                        value={formData.stockNumber}
+                        onChange={(e) => handleInputChange('stockNumber', e.target.value)}
+                        required
+                      />
                     </div>
                   </div>
 
@@ -284,6 +430,8 @@ export default function NewTruckPage() {
                       id="description"
                       placeholder="Provide a detailed description of the truck's condition, features, and any notable details..."
                       rows={4}
+                      value={formData.description}
+                      onChange={(e) => handleInputChange('description', e.target.value)}
                       required
                     />
                     <p className="text-xs text-muted-foreground">Minimum 100 characters required</p>
@@ -298,58 +446,13 @@ export default function NewTruckPage() {
                   <CardTitle>Truck Images</CardTitle>
                   <CardDescription>Upload high-quality images of the truck. Minimum 3 images required.</CardDescription>
                 </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-8 text-center">
-                    <ImageIcon className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                    <h3 className="text-lg font-medium mb-2">Upload Images</h3>
-                    <p className="text-muted-foreground mb-4">Drag and drop images here, or click to select files</p>
-                    <Button onClick={handleAddImage}>
-                      <Upload className="mr-2 h-4 w-4" />
-                      Select Images
-                    </Button>
-                  </div>
-
-                  {images.length > 0 && (
-                    <div>
-                      <h4 className="font-medium mb-2">Uploaded Images ({images.length})</h4>
-                      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                        {images.map((image, index) => (
-                          <div key={index} className="relative group">
-                            <div className="aspect-square bg-muted rounded-lg overflow-hidden">
-                              <div className="w-full h-full bg-gray-200 flex items-center justify-center">
-                                <ImageIcon className="h-8 w-8 text-gray-400" />
-                              </div>
-                            </div>
-                            <Button
-                              variant="destructive"
-                              size="icon"
-                              className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
-                              onClick={() => handleRemoveImage(index)}
-                            >
-                              <X className="h-4 w-4" />
-                            </Button>
-                            {index === 0 && (
-                              <div className="absolute bottom-2 left-2 bg-blue-600 text-white text-xs px-2 py-1 rounded">
-                                Main
-                              </div>
-                            )}
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                    <h4 className="font-medium text-blue-900 mb-2">Image Requirements</h4>
-                    <ul className="text-sm text-blue-800 space-y-1">
-                      <li>• Minimum 3 images required</li>
-                      <li>• Include exterior shots from all angles</li>
-                      <li>• Add interior photos showing dashboard, seats, and cargo area</li>
-                      <li>• Include engine bay and undercarriage if applicable</li>
-                      <li>• Use high resolution (minimum 1200x800 pixels)</li>
-                      <li>• Ensure good lighting and clear visibility</li>
-                    </ul>
-                  </div>
+                <CardContent>
+                  <ImageUpload
+                    images={images}
+                    onImagesChange={handleImagesChange}
+                    maxImages={10}
+                    maxFileSize={5}
+                  />
                 </CardContent>
               </Card>
             </TabsContent>
@@ -368,7 +471,7 @@ export default function NewTruckPage() {
                       onChange={(e) => setNewFeature(e.target.value)}
                       onKeyPress={(e) => e.key === "Enter" && handleAddFeature()}
                     />
-                    <Button onClick={handleAddFeature}>Add</Button>
+                    <Button onClick={() => handleAddFeature()}>Add</Button>
                   </div>
 
                   {features.length > 0 && (
@@ -388,44 +491,30 @@ export default function NewTruckPage() {
                   )}
 
                   <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-                    <h4 className="font-medium text-green-900 mb-2">Feature Suggestions</h4>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm text-green-800">
-                      <div>
-                        <p className="font-medium mb-1">Technology:</p>
-                        <ul className="space-y-1">
-                          <li>• SYNC 4 Infotainment System</li>
-                          <li>• 360-Degree Camera</li>
-                          <li>• Wireless Phone Charging</li>
-                          <li>• Apple CarPlay/Android Auto</li>
-                        </ul>
-                      </div>
-                      <div>
-                        <p className="font-medium mb-1">Safety:</p>
-                        <ul className="space-y-1">
-                          <li>• Pre-Collision Assist</li>
-                          <li>• Blind Spot Monitoring</li>
-                          <li>• Lane-Keeping System</li>
-                          <li>• Adaptive Cruise Control</li>
-                        </ul>
-                      </div>
-                      <div>
-                        <p className="font-medium mb-1">Comfort:</p>
-                        <ul className="space-y-1">
-                          <li>• Heated/Cooled Seats</li>
-                          <li>• Dual-Zone Climate Control</li>
-                          <li>• Power-Adjustable Seats</li>
-                          <li>• Remote Start</li>
-                        </ul>
-                      </div>
-                      <div>
-                        <p className="font-medium mb-1">Capability:</p>
-                        <ul className="space-y-1">
-                          <li>• Pro Power Onboard</li>
-                          <li>• Trailer Tow Package</li>
-                          <li>• Bed Liner</li>
-                          <li>• Running Boards</li>
-                        </ul>
-                      </div>
+                    <h4 className="font-medium text-green-900 mb-4">Feature Suggestions</h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {Object.entries(featureSuggestions).map(([category, suggestions]) => (
+                        <div key={category}>
+                          <p className="font-medium text-green-900 mb-2">{category}:</p>
+                          <div className="space-y-2">
+                            {suggestions.map((suggestion) => (
+                              <div key={suggestion} className="flex items-center justify-between">
+                                <span className="text-sm text-green-800">• {suggestion}</span>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="ml-2 h-6 text-xs"
+                                  onClick={() => handleAddFeature(suggestion)}
+                                  disabled={features.includes(suggestion)}
+                                >
+                                  <Plus className="h-3 w-3 mr-1" />
+                                  Add
+                                </Button>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      ))}
                     </div>
                   </div>
                 </CardContent>
@@ -517,16 +606,16 @@ export default function NewTruckPage() {
                 ) : (
                   <Button
                     onClick={handleSubmit}
-                    disabled={!formValid.details || !formValid.images || !formValid.features}
+                    disabled={!formValid.details || !formValid.images || !formValid.features || isSubmitting}
                   >
                     <Save className="mr-2 h-4 w-4" />
-                    Publish Listing
+                    {isSubmitting ? "Creating Listing..." : "Publish Listing"}
                   </Button>
                 )}
               </div>
             </div>
           </Tabs>
-        </main>
+        </div>
       </div>
     </div>
   )

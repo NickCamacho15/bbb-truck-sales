@@ -19,9 +19,9 @@ export default function Home() {
               </p>
             </div>
             <div className="bg-white p-6 rounded-lg shadow-md dark:bg-gray-700">
-              <h3 className="text-xl font-bold mb-4">Financing Options</h3>
+              <h3 className="text-xl font-bold mb-4">Professional Service</h3>
               <p className="text-gray-600 dark:text-gray-300">
-                Get pre-approved today! We work with multiple lenders to ensure you get the best rates possible on your truck purchase.
+                Our knowledgeable staff can help you find the perfect truck for your needs. We provide expert guidance through every step of the purchase process.
               </p>
             </div>
             <div className="bg-white p-6 rounded-lg shadow-md dark:bg-gray-700">

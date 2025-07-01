@@ -17,20 +17,6 @@ export function HeroSection() {
       cta: "Browse Inventory",
       link: "/inventory",
     },
-    {
-      image: "/placeholder.svg?height=800&width=1600",
-      title: "Work Truck Specialists",
-      subtitle: "Find the perfect truck for your business needs",
-      cta: "View All Categories",
-      link: "/inventory",
-    },
-    {
-      image: "/placeholder.svg?height=800&width=1600",
-      title: "Quality & Reliability",
-      subtitle: "Medium and light duty trucks built for the job",
-      cta: "Explore Inventory",
-      link: "/inventory",
-    },
   ]
 
   return (
@@ -62,16 +48,7 @@ export function HeroSection() {
         </div>
       ))}
 
-      <div className="absolute bottom-6 left-0 right-0 z-30 flex justify-center gap-2">
-        {slides.map((_, index) => (
-          <button
-            key={index}
-            onClick={() => setCurrentSlide(index)}
-            className={`w-3 h-3 rounded-full ${index === currentSlide ? "bg-white" : "bg-white/50"}`}
-            aria-label={`Go to slide ${index + 1}`}
-          />
-        ))}
-      </div>
+
     </section>
   )
 }

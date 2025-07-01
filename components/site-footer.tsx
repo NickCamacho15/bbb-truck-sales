@@ -5,97 +5,61 @@ export function SiteFooter() {
   return (
     <footer className="bg-gray-900 text-gray-200">
       <div className="container mx-auto px-4 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-          <div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+          <div className="flex flex-col items-start md:justify-self-start">
             <Link href="/" className="flex items-center gap-2 mb-4">
               <Truck className="h-6 w-6" />
               <span className="font-bold text-xl">Triple B Truck Sales</span>
             </Link>
-            <p className="mb-4">
+            <p className="mb-6">
               Your trusted source for medium and light duty work trucks. Family owned and operated since 2005.
             </p>
-            <div className="flex space-x-4">
-              <Link href="#" className="hover:text-blue-400">
-                <Facebook className="h-5 w-5" />
+            <div className="flex space-x-6 mt-auto">
+              <Link href="#" className="hover:text-blue-400 transition-colors">
+                <Facebook className="h-6 w-6" />
                 <span className="sr-only">Facebook</span>
               </Link>
-              <Link href="#" className="hover:text-blue-400">
-                <Instagram className="h-5 w-5" />
+              <Link href="#" className="hover:text-blue-400 transition-colors">
+                <Instagram className="h-6 w-6" />
                 <span className="sr-only">Instagram</span>
               </Link>
-              <Link href="#" className="hover:text-blue-400">
-                <Twitter className="h-5 w-5" />
+              <Link href="#" className="hover:text-blue-400 transition-colors">
+                <Twitter className="h-6 w-6" />
                 <span className="sr-only">Twitter</span>
               </Link>
             </div>
           </div>
 
-          <div>
-            <h3 className="font-semibold text-lg mb-4">Quick Links</h3>
-            <ul className="space-y-2">
+          <div className="flex flex-col items-center md:justify-self-center text-center">
+            <h3 className="font-semibold text-lg mb-5">Quick Links</h3>
+            <ul className="space-y-3">
               <li>
-                <Link href="/" className="hover:text-blue-400">
+                <Link href="/" className="hover:text-blue-400 transition-colors">
                   Home
                 </Link>
               </li>
               <li>
-                <Link href="/inventory" className="hover:text-blue-400">
+                <Link href="/inventory" className="hover:text-blue-400 transition-colors">
                   Inventory
                 </Link>
               </li>
               <li>
-                <Link href="/about" className="hover:text-blue-400">
+                <Link href="/about" className="hover:text-blue-400 transition-colors">
                   About Us
                 </Link>
               </li>
               <li>
-                <Link href="/financing" className="hover:text-blue-400">
-                  Financing
-                </Link>
-              </li>
-              <li>
-                <Link href="/contact" className="hover:text-blue-400">
+                <Link href="/contact" className="hover:text-blue-400 transition-colors">
                   Contact Us
                 </Link>
               </li>
             </ul>
           </div>
 
-          <div>
-            <h3 className="font-semibold text-lg mb-4">Truck Categories</h3>
-            <ul className="space-y-2">
-              <li>
-                <Link href="/inventory?category=pickups" className="hover:text-blue-400">
-                  Pickup Trucks
-                </Link>
-              </li>
-              <li>
-                <Link href="/inventory?category=dump-trucks" className="hover:text-blue-400">
-                  Dump Trucks
-                </Link>
-              </li>
-              <li>
-                <Link href="/inventory?category=safety-trucks" className="hover:text-blue-400">
-                  Safety Trucks
-                </Link>
-              </li>
-              <li>
-                <Link href="/inventory?category=box-trucks" className="hover:text-blue-400">
-                  Box Trucks
-                </Link>
-              </li>
-              <li>
-                <Link href="/inventory?category=flatbed-trucks" className="hover:text-blue-400">
-                  Flatbed Trucks
-                </Link>
-              </li>
-            </ul>
-          </div>
-
-          <div>
-            <h3 className="font-semibold text-lg mb-4">Contact Us</h3>
-            <ul className="space-y-3">
-              <li className="flex items-start gap-2">
+          <div className="flex flex-col items-center md:items-end md:justify-self-end">
+            <h3 className="font-semibold text-lg mb-5 md:text-right w-full">Contact Us</h3>
+            <ul className="space-y-4 md:text-right">
+              <li className="flex items-start gap-3 md:flex-row-reverse">
                 <MapPin className="h-5 w-5 mt-0.5 flex-shrink-0" />
                 <span>
                   123 Truck Lane
@@ -103,11 +67,11 @@ export function SiteFooter() {
                   Dallas, TX 75001
                 </span>
               </li>
-              <li className="flex items-center gap-2">
+              <li className="flex items-center gap-3 md:flex-row-reverse">
                 <Phone className="h-5 w-5 flex-shrink-0" />
                 <span>(555) 123-4567</span>
               </li>
-              <li className="flex items-center gap-2">
+              <li className="flex items-center gap-3 md:flex-row-reverse">
                 <Mail className="h-5 w-5 flex-shrink-0" />
                 <span>info@bbbtrucksales.com</span>
               </li>
@@ -116,15 +80,15 @@ export function SiteFooter() {
         </div>
 
         <div className="border-t border-gray-800 mt-12 pt-8 text-center text-sm">
-          <p>&copy; {new Date().getFullYear()} BBB Truck Sales. All rights reserved.</p>
+          <p>&copy; 2025 BBB Truck Sales. All rights reserved.</p>
           <div className="mt-2 space-x-4">
-            <Link href="/privacy" className="hover:text-blue-400">
+            <Link href="/privacy" className="hover:text-blue-400 transition-colors">
               Privacy Policy
             </Link>
-            <Link href="/terms" className="hover:text-blue-400">
+            <Link href="/terms" className="hover:text-blue-400 transition-colors">
               Terms of Service
             </Link>
-            <Link href="/sitemap" className="hover:text-blue-400">
+            <Link href="/sitemap" className="hover:text-blue-400 transition-colors">
               Sitemap
             </Link>
           </div>

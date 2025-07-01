@@ -1,6 +1,7 @@
-import type { Metadata } from "next"
+"use client"
+
+import { useState, useEffect } from "react"
 import Link from "next/link"
-import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -9,12 +10,6 @@ import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Clock, Mail, MapPin, Phone } from "lucide-react"
 
-export const metadata: Metadata = {
-  title: "Contact Us | Triple B Truck Sales",
-  description:
-    "Contact Triple B Truck Sales for inquiries about our medium and light duty work trucks, financing options, or to schedule a test drive.",
-}
-
 export default function ContactPage() {
   return (
     <div className="container mx-auto py-8 px-4 md:px-6">
@@ -22,184 +17,61 @@ export default function ContactPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
         {/* Contact Form */}
-        <Card>
+        <Card className="h-full">
           <CardHeader>
             <CardTitle>Send Us a Message</CardTitle>
           </CardHeader>
           <CardContent>
-            <form className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="first-name">First Name</Label>
-                  <Input id="first-name" placeholder="John" required />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="last-name">Last Name</Label>
-                  <Input id="last-name" placeholder="Doe" required />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
-                  <Input id="email" type="email" placeholder="john.doe@example.com" required />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="phone">Phone</Label>
-                  <Input id="phone" type="tel" placeholder="(555) 123-4567" />
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="inquiry-type">Inquiry Type</Label>
-                <Select>
-                  <SelectTrigger id="inquiry-type">
-                    <SelectValue placeholder="Select inquiry type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="general">General Inquiry</SelectItem>
-                    <SelectItem value="sales">Sales Inquiry</SelectItem>
-                    <SelectItem value="test-drive">Schedule Test Drive</SelectItem>
-                    <SelectItem value="financing">Financing Question</SelectItem>
-                    <SelectItem value="service">Service Department</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="truck-interest">Interested in a specific truck?</Label>
-                <Select>
-                  <SelectTrigger id="truck-interest">
-                    <SelectValue placeholder="Select a truck model (optional)" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="pickup">Pickup Truck</SelectItem>
-                    <SelectItem value="dump">Dump Truck</SelectItem>
-                    <SelectItem value="safety">Safety Truck</SelectItem>
-                    <SelectItem value="box">Box Truck</SelectItem>
-                    <SelectItem value="flatbed">Flatbed Truck</SelectItem>
-                    <SelectItem value="other">Other</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="message">Message</Label>
-                <Textarea id="message" placeholder="How can we help you today?" rows={5} required />
-              </div>
-
-              <Button type="submit" className="w-full">
-                Send Message
-              </Button>
-            </form>
+            <ContactForm />
           </CardContent>
         </Card>
 
         {/* Contact Information */}
-        <div className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Contact Information</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-start gap-3">
-                <MapPin className="h-5 w-5 text-blue-600 mt-0.5 flex-shrink-0" />
-                <div>
-                  <p className="font-medium">Triple B Truck Sales</p>
-                  <p>123 Truck Lane</p>
-                  <p>Dallas, TX 75001</p>
-                </div>
+        <Card className="h-full">
+          <CardHeader>
+            <CardTitle>Contact Information</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <div className="flex items-start gap-3">
+              <MapPin className="h-5 w-5 text-blue-600 mt-0.5 flex-shrink-0" />
+              <div>
+                <p className="font-medium">Triple B Truck Sales</p>
+                <p>123 Truck Lane</p>
+                <p>Dallas, TX 75001</p>
               </div>
-              <div className="flex items-center gap-3">
-                <Phone className="h-5 w-5 text-blue-600 flex-shrink-0" />
-                <div>
-                  <p className="font-medium">Sales Department</p>
-                  <p>(555) 123-4567</p>
-                </div>
+            </div>
+            <div className="flex items-center gap-3">
+              <Phone className="h-5 w-5 text-blue-600 flex-shrink-0" />
+              <div>
+                <p className="font-medium">Sales Department</p>
+                <p>(555) 123-4567</p>
               </div>
-              <div className="flex items-center gap-3">
-                <Phone className="h-5 w-5 text-blue-600 flex-shrink-0" />
-                <div>
-                  <p className="font-medium">Service Department</p>
-                  <p>(555) 123-4568</p>
-                </div>
+            </div>
+            <div className="flex items-center gap-3">
+              <Phone className="h-5 w-5 text-blue-600 flex-shrink-0" />
+              <div>
+                <p className="font-medium">Service Department</p>
+                <p>(555) 123-4568</p>
               </div>
-              <div className="flex items-center gap-3">
-                <Mail className="h-5 w-5 text-blue-600 flex-shrink-0" />
-                <div>
-                  <p className="font-medium">Email</p>
-                  <p>info@bbbtrucksales.com</p>
-                </div>
+            </div>
+            <div className="flex items-center gap-3">
+              <Mail className="h-5 w-5 text-blue-600 flex-shrink-0" />
+              <div>
+                <p className="font-medium">Email</p>
+                <p>info@bbbtrucksales.com</p>
               </div>
-              <div className="flex items-start gap-3">
-                <Clock className="h-5 w-5 text-blue-600 mt-0.5 flex-shrink-0" />
-                <div>
-                  <p className="font-medium">Business Hours</p>
-                  <p>Monday - Friday: 9:00 AM - 7:00 PM</p>
-                  <p>Saturday: 10:00 AM - 5:00 PM</p>
-                  <p>Sunday: Closed</p>
-                </div>
+            </div>
+            <div className="flex items-start gap-3">
+              <Clock className="h-5 w-5 text-blue-600 mt-0.5 flex-shrink-0" />
+              <div>
+                <p className="font-medium">Business Hours</p>
+                <p>Monday - Friday: 9:00 AM - 7:00 PM</p>
+                <p>Saturday: 10:00 AM - 5:00 PM</p>
+                <p>Sunday: Closed</p>
               </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Location</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="relative h-[300px] rounded-lg overflow-hidden mb-4">
-                <Image
-                  src="/placeholder.svg?height=600&width=800"
-                  alt="Map location of BBB Truck Sales"
-                  fill
-                  className="object-cover"
-                />
-              </div>
-              <p className="text-sm text-gray-600 mb-4">
-                We're conveniently located just off Highway 75, with easy access from all parts of the Dallas metro
-                area.
-              </p>
-              <Button className="w-full">Get Directions</Button>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-
-      {/* FAQ Section */}
-      <div className="mb-12">
-        <h2 className="text-2xl font-bold mb-6">Frequently Asked Questions</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {[
-            {
-              question: "Do you offer financing options?",
-              answer:
-                "Yes, we offer a variety of financing options to fit your budget and credit situation. Our finance team works with multiple lenders to find the best rates for you.",
-            },
-            {
-              question: "Can I schedule a test drive online?",
-              answer:
-                "You can schedule a test drive through our contact form, or by calling our sales department directly.",
-            },
-            {
-              question: "Do you accept trade-ins?",
-              answer:
-                "Yes, we accept trade-ins of all makes and models. Our team will provide a fair market value for your vehicle.",
-            },
-            {
-              question: "Do you offer delivery services?",
-              answer:
-                "We offer delivery services within a 100-mile radius of our dealership. Contact us for more details and availability.",
-            },
-          ].map((faq, index) => (
-            <Card key={index}>
-              <CardContent className="pt-6">
-                <h3 className="text-lg font-semibold mb-2">{faq.question}</h3>
-                <p className="text-gray-600">{faq.answer}</p>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
       {/* Call to Action */}
@@ -217,4 +89,233 @@ export default function ContactPage() {
       </div>
     </div>
   )
+}
+
+interface Truck {
+  id: string
+  title: string
+  year: number
+  make: string
+  model: string
+  status: string
+}
+
+function ContactForm() {
+  const [formData, setFormData] = useState({
+    firstName: "",
+    lastName: "",
+    email: "",
+    phone: "",
+    inquiryType: "",
+    truckId: "",
+    message: "",
+  })
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [formStatus, setFormStatus] = useState<'idle' | 'success' | 'error'>('idle')
+  const [trucks, setTrucks] = useState<Truck[]>([])
+  const [isLoadingTrucks, setIsLoadingTrucks] = useState(true)
+  const [trucksError, setTrucksError] = useState<string | null>(null)
+
+  // Fetch available trucks
+  useEffect(() => {
+    const fetchTrucks = async () => {
+      try {
+        setIsLoadingTrucks(true)
+        setTrucksError(null)
+        
+        // Fetch only available trucks
+        const response = await fetch('/api/trucks?status=AVAILABLE')
+        
+        if (!response.ok) {
+          throw new Error('Failed to fetch trucks')
+        }
+        
+        const data = await response.json()
+        setTrucks(data.trucks || [])
+      } catch (err) {
+        console.error('Error fetching trucks:', err)
+        setTrucksError('Failed to load available trucks')
+      } finally {
+        setIsLoadingTrucks(false)
+      }
+    }
+
+    fetchTrucks()
+  }, [])
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { id, value } = e.target
+    setFormData(prev => ({ ...prev, [id]: value }))
+  }
+
+  const handleSelectChange = (name: string, value: string) => {
+    setFormData(prev => ({ ...prev, [name]: value }))
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setIsSubmitting(true)
+    setFormStatus('idle')
+
+    try {
+      const response = await fetch('/api/inquiries', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: `${formData.firstName} ${formData.lastName}`,
+          email: formData.email,
+          phone: formData.phone,
+          inquiryType: formData.inquiryType || 'GENERAL',
+          message: formData.message,
+          truckId: formData.truckId && !['none', 'error', 'loading', 'empty'].includes(formData.truckId) ? formData.truckId : undefined,
+        }),
+      })
+
+      if (response.ok) {
+        setFormStatus('success')
+        // Clear form
+        setFormData({
+          firstName: "",
+          lastName: "",
+          email: "",
+          phone: "",
+          inquiryType: "",
+          truckId: "",
+          message: "",
+        })
+      } else {
+        setFormStatus('error')
+      }
+    } catch (error) {
+      console.error("Error submitting form:", error)
+      setFormStatus('error')
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
+  const formatTruckOption = (truck: Truck) => {
+    return `${truck.year} ${truck.make} ${truck.model} - ${truck.title}`
+  }
+
+  return (
+    <form className="space-y-4" onSubmit={handleSubmit}>
+      {formStatus === 'success' && (
+        <div className="bg-green-50 border border-green-200 text-green-800 rounded-md p-4 mb-4">
+          Thank you for your message! We will get back to you shortly.
+        </div>
+      )}
+
+      {formStatus === 'error' && (
+        <div className="bg-red-50 border border-red-200 text-red-800 rounded-md p-4 mb-4">
+          There was an error submitting your form. Please try again.
+        </div>
+      )}
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label htmlFor="firstName">First Name</Label>
+          <Input 
+            id="firstName" 
+            value={formData.firstName}
+            onChange={handleChange}
+            placeholder="John" 
+            required 
+          />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="lastName">Last Name</Label>
+          <Input 
+            id="lastName" 
+            value={formData.lastName}
+            onChange={handleChange}
+            placeholder="Doe" 
+            required 
+          />
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label htmlFor="email">Email</Label>
+          <Input 
+            id="email" 
+            type="email" 
+            value={formData.email}
+            onChange={handleChange}
+            placeholder="john.doe@example.com" 
+            required 
+          />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="phone">Phone</Label>
+          <Input 
+            id="phone" 
+            type="tel" 
+            value={formData.phone}
+            onChange={handleChange}
+            placeholder="(555) 123-4567" 
+          />
+        </div>
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="inquiryType">Inquiry Type</Label>
+        <Select onValueChange={(value) => handleSelectChange("inquiryType", value)}>
+          <SelectTrigger id="inquiryType">
+            <SelectValue placeholder="Select inquiry type" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="GENERAL">General Inquiry</SelectItem>
+            <SelectItem value="SALES">Sales Inquiry</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="truckId">Interested in a specific truck?</Label>
+        <Select onValueChange={(value) => handleSelectChange("truckId", value)}>
+          <SelectTrigger id="truckId">
+            <SelectValue placeholder={isLoadingTrucks ? "Loading available trucks..." : "Select a truck (optional)"} />
+          </SelectTrigger>
+          <SelectContent>
+            {trucksError ? (
+              <SelectItem value="error" disabled>Error loading trucks</SelectItem>
+            ) : isLoadingTrucks ? (
+              <SelectItem value="loading" disabled>Loading trucks...</SelectItem>
+            ) : trucks.length === 0 ? (
+              <SelectItem value="empty" disabled>No trucks currently available</SelectItem>
+            ) : (
+              <>
+                <SelectItem value="none">Not interested in a specific truck</SelectItem>
+                {trucks.map((truck) => (
+                  <SelectItem key={truck.id} value={truck.id}>
+                    {formatTruckOption(truck)}
+                  </SelectItem>
+                ))}
+              </>
+            )}
+          </SelectContent>
+        </Select>
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="message">Message</Label>
+        <Textarea 
+          id="message" 
+          value={formData.message}
+          onChange={handleChange}
+          placeholder="How can we help you today?" 
+          rows={5} 
+          required 
+        />
+      </div>
+
+      <Button type="submit" className="w-full" disabled={isSubmitting}>
+        {isSubmitting ? "Sending..." : "Send Message"}
+      </Button>
+    </form>
+  );
 }

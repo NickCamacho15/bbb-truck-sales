@@ -52,8 +52,19 @@ export async function authenticateUser(username: string, password: string) {
 }
 
 export async function getCurrentUser(request: Request) {
-  const authHeader = request.headers.get("authorization")
-  const token = authHeader?.replace("Bearer ", "")
+  // Try to get token from Authorization header first
+  let token = request.headers.get("authorization")?.replace("Bearer ", "")
+  
+  // If no Authorization header, try to get from cookies
+  if (!token) {
+    const cookieHeader = request.headers.get("cookie")
+    if (cookieHeader) {
+      const cookies = Object.fromEntries(
+        cookieHeader.split("; ").map(cookie => cookie.split("="))
+      )
+      token = cookies["auth-token"]
+    }
+  }
 
   if (!token) {
     return null

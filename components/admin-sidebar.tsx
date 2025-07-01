@@ -36,22 +36,10 @@ export function AdminSidebar({ activePage }: AdminSidebarProps) {
       icon: <MessageSquare className="h-5 w-5" />,
     },
     {
-      id: "customers",
-      label: "Customers",
-      href: "/admin/customers",
-      icon: <Users className="h-5 w-5" />,
-    },
-    {
       id: "reports",
-      label: "Reports",
-      href: "/admin/reports",
+      label: "Analytics",
+      href: "/admin/analytics",
       icon: <BarChart3 className="h-5 w-5" />,
-    },
-    {
-      id: "documents",
-      label: "Documents",
-      href: "/admin/documents",
-      icon: <FileText className="h-5 w-5" />,
     },
     {
       id: "settings",

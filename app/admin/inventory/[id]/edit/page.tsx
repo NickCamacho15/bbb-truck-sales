@@ -10,79 +10,51 @@ import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { AdminHeader } from "@/components/admin-header"
-import { AdminSidebar } from "@/components/admin-sidebar"
-import { ArrowLeft, Check, ChevronRight, ImageIcon, Info, ListChecks, Save, Upload, X } from "lucide-react"
+import { ArrowLeft, Check, ChevronRight, ImageIcon, Info, ListChecks, Save, Upload, X, Plus, Loader2 } from "lucide-react"
+import { ImageUpload } from "@/components/image-upload"
 
-// Mock truck data - in a real app, this would come from a database
-const getTruckById = (id: string) => {
-  const trucks = [
-    {
-      id: 1,
-      title: "2022 Ford F-150 XLT",
-      price: 42999,
-      mileage: 15420,
-      year: 2022,
-      make: "ford",
-      model: "f-150",
-      trim: "XLT",
-      fuelType: "gasoline",
-      transmission: "automatic",
-      drivetrain: "4wd",
-      color: "Oxford White",
-      vin: "1FTEW1EP5NKD12345",
-      stock: "F22-0123",
-      description:
-        "This 2022 Ford F-150 XLT is in excellent condition with low mileage. It features the powerful 3.5L EcoBoost V6 engine, 4x4 drivetrain, and comes loaded with features.",
-      images: [
-        "/placeholder.svg?height=600&width=800",
-        "/placeholder.svg?height=600&width=800",
-        "/placeholder.svg?height=600&width=800",
-      ],
-      features: [
-        "SYNC 4 with 12-inch Touchscreen",
-        "360-Degree Camera",
-        "Pro Power Onboard Generator",
-        "Lane-Keeping System",
-        "Pre-Collision Assist with Automatic Emergency Braking",
-        "Blind Spot Information System",
-      ],
-    },
-    {
-      id: 2,
-      title: "2021 Ford F-250 Super Duty Lariat",
-      price: 56799,
-      mileage: 22150,
-      year: 2021,
-      make: "ford",
-      model: "f-250",
-      trim: "Lariat",
-      fuelType: "diesel",
-      transmission: "automatic",
-      drivetrain: "4wd",
-      color: "Agate Black",
-      vin: "1FT7W2BT5MED12345",
-      stock: "F21-0456",
-      description:
-        "This 2021 Ford F-250 Super Duty Lariat is a powerful work truck with the legendary Power Stroke diesel engine.",
-      images: ["/placeholder.svg?height=600&width=800", "/placeholder.svg?height=600&width=800"],
-      features: [
-        "Power Stroke 6.7L V8 Turbo Diesel",
-        "SYNC 4 with 12-inch Touchscreen",
-        "Leather-Appointed Seating",
-        "Heated and Ventilated Front Seats",
-        "Trailer Tow Package",
-      ],
-    },
-  ]
+interface TruckImage {
+  id: string
+  imageUrl: string
+  isPrimary: boolean
+  sortOrder: number
+}
 
-  return trucks.find((truck) => truck.id === Number.parseInt(id))
+interface TruckFeature {
+  id: string
+  featureName: string
+}
+
+interface Truck {
+  id: string
+  title: string
+  price: number
+  year: number
+  make: string
+  model: string
+  trim: string
+  mileage: number
+  fuelType: string
+  transmission: string
+  drivetrain: string
+  color: string
+  vin: string
+  stockNumber: string
+  description: string
+  status: "AVAILABLE" | "PENDING_SALE" | "SOLD"
+  featured: boolean
+  images: TruckImage[]
+  features: TruckFeature[]
 }
 
 export default function EditTruckPage({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter()
   const resolvedParams = use(params)
   const [activeTab, setActiveTab] = useState("details")
-  const [truck, setTruck] = useState<any>(null)
+  const [truck, setTruck] = useState<Truck | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [isSubmitting, setIsSubmitting] = useState(false)
   const [images, setImages] = useState<string[]>([])
   const [features, setFeatures] = useState<string[]>([])
   const [newFeature, setNewFeature] = useState("")
@@ -90,7 +62,7 @@ export default function EditTruckPage({ params }: { params: Promise<{ id: string
     title: "",
     price: "",
     year: "",
-    make: "ford",
+    make: "",
     model: "",
     trim: "",
     mileage: "",
@@ -99,8 +71,10 @@ export default function EditTruckPage({ params }: { params: Promise<{ id: string
     drivetrain: "",
     color: "",
     vin: "",
-    stock: "",
+    stockNumber: "",
     description: "",
+    status: "AVAILABLE" as const,
+    featured: false,
   })
   const [formValid, setFormValid] = useState({
     details: true,
@@ -108,35 +82,94 @@ export default function EditTruckPage({ params }: { params: Promise<{ id: string
     features: true,
   })
 
+  // Feature suggestions organized by category
+  const featureSuggestions = {
+    Technology: [
+      "SYNC 4 Infotainment System",
+      "360-Degree Camera",
+      "Wireless Phone Charging",
+      "Apple CarPlay/Android Auto"
+    ],
+    Safety: [
+      "Pre-Collision Assist",
+      "Blind Spot Monitoring", 
+      "Lane-Keeping System",
+      "Adaptive Cruise Control"
+    ],
+    Comfort: [
+      "Heated/Cooled Seats",
+      "Dual-Zone Climate Control",
+      "Power-Adjustable Seats",
+      "Remote Start"
+    ],
+    Capability: [
+      "Pro Power Onboard",
+      "Trailer Tow Package",
+      "Bed Liner",
+      "Running Boards"
+    ]
+  }
+
+  // Fetch truck data from API
   useEffect(() => {
-    const truckData = getTruckById(resolvedParams.id)
-    if (truckData) {
-      setTruck(truckData)
-      setFormData({
-        title: truckData.title,
-        price: truckData.price.toString(),
-        year: truckData.year.toString(),
-        make: truckData.make,
-        model: truckData.model,
-        trim: truckData.trim,
-        mileage: truckData.mileage.toString(),
-        fuelType: truckData.fuelType,
-        transmission: truckData.transmission,
-        drivetrain: truckData.drivetrain,
-        color: truckData.color,
-        vin: truckData.vin,
-        stock: truckData.stock,
-        description: truckData.description,
-      })
-      setImages(truckData.images || [])
-      setFeatures(truckData.features || [])
+    const fetchTruck = async () => {
+      try {
+        setLoading(true)
+        setError(null)
+        
+        const response = await fetch(`/api/trucks/${resolvedParams.id}`)
+        if (!response.ok) {
+          if (response.status === 404) {
+            setError("Truck not found")
+          } else {
+            throw new Error('Failed to fetch truck')
+          }
+          return
+        }
+        
+        const truckData: Truck = await response.json()
+        setTruck(truckData)
+        
+        // Populate form data
+        setFormData({
+          title: truckData.title,
+          price: truckData.price.toString(),
+          year: truckData.year.toString(),
+          make: truckData.make,
+          model: truckData.model,
+          trim: truckData.trim,
+          mileage: truckData.mileage.toString(),
+          fuelType: truckData.fuelType,
+          transmission: truckData.transmission,
+          drivetrain: truckData.drivetrain,
+          color: truckData.color,
+          vin: truckData.vin,
+          stockNumber: truckData.stockNumber,
+          description: truckData.description,
+          status: truckData.status,
+          featured: truckData.featured,
+        })
+        
+        // Populate images and features
+        setImages(truckData.images.map(img => img.imageUrl))
+        setFeatures(truckData.features.map(feat => feat.featureName))
+        
+      } catch (err) {
+        console.error('Error fetching truck:', err)
+        setError(err instanceof Error ? err.message : 'Failed to load truck')
+      } finally {
+        setLoading(false)
+      }
     }
+
+    fetchTruck()
   }, [resolvedParams.id])
 
   const validateDetailsTab = () => {
-    const valid = formData.title && formData.price && formData.year && formData.model
-    setFormValid((prev) => ({ ...prev, details: !!valid }))
-    return !!valid
+    const requiredFields = ['title', 'price', 'year', 'make', 'model', 'trim', 'mileage', 'fuelType', 'transmission', 'drivetrain', 'color', 'vin', 'stockNumber', 'description']
+    const isValid = requiredFields.every(field => formData[field as keyof typeof formData]?.toString().trim() !== "")
+    setFormValid((prev) => ({ ...prev, details: isValid }))
+    return isValid
   }
 
   const validateImagesTab = () => {
@@ -180,23 +213,18 @@ export default function EditTruckPage({ params }: { params: Promise<{ id: string
     else if (activeTab === "review") setActiveTab("features")
   }
 
-  const handleInputChange = (field: string, value: string) => {
+  const handleInputChange = (field: string, value: string | boolean) => {
     setFormData((prev) => ({ ...prev, [field]: value }))
   }
 
-  const handleAddImage = () => {
-    setImages([...images, `/placeholder.svg?height=600&width=800&text=Image ${images.length + 1}`])
-  }
-
-  const handleRemoveImage = (index: number) => {
-    const newImages = [...images]
-    newImages.splice(index, 1)
+  const handleImagesChange = (newImages: string[]) => {
     setImages(newImages)
   }
 
-  const handleAddFeature = () => {
-    if (newFeature.trim()) {
-      setFeatures([...features, newFeature.trim()])
+  const handleAddFeature = (feature?: string) => {
+    const featureToAdd = feature || newFeature.trim()
+    if (featureToAdd && !features.includes(featureToAdd)) {
+      setFeatures([...features, featureToAdd])
       setNewFeature("")
     }
   }
@@ -207,80 +235,187 @@ export default function EditTruckPage({ params }: { params: Promise<{ id: string
     setFeatures(newFeatures)
   }
 
-  const handleSubmit = () => {
-    // In a real app, this would update the truck in the database
-    alert("Truck listing updated successfully!")
-    router.push("/admin/inventory")
+  const handleSubmit = async () => {
+    if (!formValid.details || !formValid.images || !formValid.features) {
+      alert("Please complete all required sections before submitting.")
+      return
+    }
+
+    setIsSubmitting(true)
+    
+    try {
+      // Prepare the data for submission
+      const updateData = {
+        title: formData.title,
+        price: Number(formData.price),
+        year: Number(formData.year),
+        make: formData.make,
+        model: formData.model,
+        trim: formData.trim,
+        mileage: Number(formData.mileage),
+        fuelType: formData.fuelType,
+        transmission: formData.transmission,
+        drivetrain: formData.drivetrain,
+        color: formData.color,
+        vin: formData.vin,
+        stockNumber: formData.stockNumber,
+        description: formData.description,
+        status: formData.status,
+        featured: formData.featured,
+        images: images,
+        features: features
+      }
+
+      const response = await fetch(`/api/trucks/${resolvedParams.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(updateData),
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Failed to update truck listing')
+      }
+
+      // Success! Redirect to the inventory page
+      alert("Truck listing updated successfully!")
+      router.push("/admin/inventory")
+      
+    } catch (error) {
+      console.error('Error updating truck:', error)
+      alert(`Failed to update truck listing: ${error instanceof Error ? error.message : 'Unknown error'}`)
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
-  if (!truck) {
+  if (loading) {
     return (
-      <div className="grid min-h-screen w-full lg:grid-cols-[280px_1fr]">
-        <AdminSidebar activePage="inventory" />
-        <div className="flex flex-col">
-          <AdminHeader title="Edit Truck" />
-          <main className="flex-1 p-6 flex items-center justify-center">
-            <div className="text-center">
-              <h2 className="text-2xl font-bold mb-2">Truck Not Found</h2>
-              <p className="text-muted-foreground mb-4">The truck you're looking for doesn't exist.</p>
-              <Button onClick={() => router.push("/admin/inventory")}>
-                <ArrowLeft className="mr-2 h-4 w-4" />
-                Back to Inventory
+      <div className="flex flex-col min-h-screen">
+        <AdminHeader title="Edit Truck" />
+        <div className="flex-1 p-4 space-y-4">
+          <div className="flex items-center mb-6">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => router.push("/admin/inventory")}
+              className="gap-1"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              <span>Back to Inventory</span>
+            </Button>
+          </div>
+
+          <div className="space-y-4">
+            <div>
+              <h1 className="text-2xl font-bold">Edit Truck Listing</h1>
+              <p className="text-muted-foreground">
+                Update the truck listing information, images, and features.
+              </p>
+            </div>
+
+            <div className="flex items-center justify-center h-64">
+              <div className="flex flex-col items-center gap-2">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                <p>Loading truck data...</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  if (error || !truck) {
+    return (
+      <div className="flex flex-col min-h-screen">
+        <AdminHeader title="Edit Truck" />
+        <div className="flex-1 p-4 space-y-4">
+          <div className="flex items-center mb-6">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => router.push("/admin/inventory")}
+              className="gap-1"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              <span>Back to Inventory</span>
+            </Button>
+          </div>
+
+          <div className="space-y-4">
+            <div>
+              <h1 className="text-2xl font-bold">Edit Truck Listing</h1>
+              <p className="text-muted-foreground">
+                Update the truck listing information, images, and features.
+              </p>
+            </div>
+
+            <div className="p-8 text-center">
+              <p className="text-red-500 font-medium">{error}</p>
+              <Button 
+                onClick={() => router.push("/admin/inventory")} 
+                className="mt-4"
+              >
+                Return to Inventory
               </Button>
             </div>
-          </main>
+          </div>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="grid min-h-screen w-full lg:grid-cols-[280px_1fr]">
-      <AdminSidebar activePage="inventory" />
+    <div className="flex flex-col min-h-screen">
+      <AdminHeader title="Edit Truck" />
+      <div className="flex-1 p-4 space-y-4">
+        <div className="flex items-center mb-6">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => router.push("/admin/inventory")}
+            className="gap-1"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            <span>Back to Inventory</span>
+          </Button>
+        </div>
 
-      <div className="flex flex-col">
-        <AdminHeader title="Edit Truck" />
-
-        <main className="flex-1 p-6">
-          <div className="mb-6">
-            <Button
-              variant="ghost"
-              className="flex items-center text-muted-foreground"
-              onClick={() => router.push("/admin/inventory")}
-            >
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              Back to Inventory
-            </Button>
-          </div>
-
-          <div className="mb-8">
+        <div className="space-y-4">
+          <div>
             <h1 className="text-2xl font-bold">Edit Truck Listing</h1>
-            <p className="text-muted-foreground">Update the truck listing information, images, and features.</p>
+            <p className="text-muted-foreground">
+              Update the truck listing information, images, and features.
+            </p>
           </div>
 
-          <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-4">
-            <TabsList className="grid w-full grid-cols-4">
+          <Tabs defaultValue="details" value={activeTab} onValueChange={handleTabChange}>
+            <TabsList className="grid grid-cols-4 max-w-2xl mb-6">
               <TabsTrigger value="details" className="flex items-center gap-2">
                 <Info className="h-4 w-4" />
-                <span className="hidden sm:inline">Basic Details</span>
+                <span className="hidden sm:inline-block">Basic Details</span>
                 <span className="sm:hidden">Details</span>
-                {formValid.details && <Check className="h-4 w-4 text-green-500 ml-auto" />}
+                {formValid.details && <Check className="h-5 w-5 ml-1 text-green-600 flex-shrink-0" />}
               </TabsTrigger>
               <TabsTrigger value="images" className="flex items-center gap-2">
                 <ImageIcon className="h-4 w-4" />
-                <span className="hidden sm:inline">Truck Images</span>
+                <span className="hidden sm:inline-block">Truck Images</span>
                 <span className="sm:hidden">Images</span>
-                {formValid.images && <Check className="h-4 w-4 text-green-500 ml-auto" />}
+                {formValid.images && <Check className="h-5 w-5 ml-1 text-green-600 flex-shrink-0" />}
               </TabsTrigger>
               <TabsTrigger value="features" className="flex items-center gap-2">
                 <ListChecks className="h-4 w-4" />
-                <span className="hidden sm:inline">Features & Specs</span>
+                <span className="hidden sm:inline-block">Features & Specs</span>
                 <span className="sm:hidden">Features</span>
-                {formValid.features && <Check className="h-4 w-4 text-green-500 ml-auto" />}
+                {formValid.features && <Check className="h-5 w-5 ml-1 text-green-600 flex-shrink-0" />}
               </TabsTrigger>
               <TabsTrigger value="review" className="flex items-center gap-2">
-                <Check className="h-4 w-4" />
-                <span>Review</span>
+                <Save className="h-4 w-4" />
+                <span className="hidden sm:inline-block">Review</span>
+                <span className="sm:hidden">Review</span>
               </TabsTrigger>
             </TabsList>
 
@@ -329,29 +464,23 @@ export default function EditTruckPage({ params }: { params: Promise<{ id: string
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="make">Make</Label>
-                      <Select value={formData.make} onValueChange={(value) => handleInputChange("make", value)}>
-                        <SelectTrigger id="make">
-                          <SelectValue placeholder="Select make" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="ford">Ford</SelectItem>
-                        </SelectContent>
-                      </Select>
+                      <Input
+                        id="make"
+                        value={formData.make}
+                        onChange={(e) => handleInputChange("make", e.target.value)}
+                        placeholder="e.g. Ford, Chevrolet, Toyota"
+                        required
+                      />
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="model">Model</Label>
-                      <Select value={formData.model} onValueChange={(value) => handleInputChange("model", value)}>
-                        <SelectTrigger id="model">
-                          <SelectValue placeholder="Select model" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="f-150">F-150</SelectItem>
-                          <SelectItem value="f-250">F-250</SelectItem>
-                          <SelectItem value="f-350">F-350</SelectItem>
-                          <SelectItem value="ranger">Ranger</SelectItem>
-                          <SelectItem value="maverick">Maverick</SelectItem>
-                        </SelectContent>
-                      </Select>
+                      <Input
+                        id="model"
+                        value={formData.model}
+                        onChange={(e) => handleInputChange("model", e.target.value)}
+                        placeholder="e.g. F-150, Silverado, Tundra"
+                        required
+                      />
                     </div>
                   </div>
 
@@ -387,47 +516,41 @@ export default function EditTruckPage({ params }: { params: Promise<{ id: string
                           <SelectValue placeholder="Select fuel type" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="gasoline">Gasoline</SelectItem>
-                          <SelectItem value="diesel">Diesel</SelectItem>
-                          <SelectItem value="hybrid">Hybrid</SelectItem>
-                          <SelectItem value="electric">Electric</SelectItem>
+                          <SelectItem value="Gasoline">Gasoline</SelectItem>
+                          <SelectItem value="Diesel">Diesel</SelectItem>
+                          <SelectItem value="Hybrid">Hybrid</SelectItem>
+                          <SelectItem value="Electric">Electric</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="transmission">Transmission</Label>
-                      <Select
-                        value={formData.transmission}
-                        onValueChange={(value) => handleInputChange("transmission", value)}
-                      >
+                      <Select value={formData.transmission} onValueChange={(value) => handleInputChange("transmission", value)}>
                         <SelectTrigger id="transmission">
                           <SelectValue placeholder="Select transmission" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="automatic">Automatic</SelectItem>
-                          <SelectItem value="manual">Manual</SelectItem>
+                          <SelectItem value="Automatic">Automatic</SelectItem>
+                          <SelectItem value="Manual">Manual</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="drivetrain">Drivetrain</Label>
-                      <Select
-                        value={formData.drivetrain}
-                        onValueChange={(value) => handleInputChange("drivetrain", value)}
-                      >
+                      <Select value={formData.drivetrain} onValueChange={(value) => handleInputChange("drivetrain", value)}>
                         <SelectTrigger id="drivetrain">
                           <SelectValue placeholder="Select drivetrain" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="2wd">2WD</SelectItem>
-                          <SelectItem value="4wd">4WD</SelectItem>
-                          <SelectItem value="awd">AWD</SelectItem>
+                          <SelectItem value="2WD">2WD</SelectItem>
+                          <SelectItem value="4WD">4WD</SelectItem>
+                          <SelectItem value="AWD">AWD</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div className="space-y-2">
                       <Label htmlFor="color">Exterior Color</Label>
                       <Input
@@ -448,17 +571,44 @@ export default function EditTruckPage({ params }: { params: Promise<{ id: string
                         required
                       />
                     </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="stock-number">Stock Number</Label>
+                      <Input
+                        id="stock-number"
+                        value={formData.stockNumber}
+                        onChange={(e) => handleInputChange("stockNumber", e.target.value)}
+                        placeholder="e.g. STK12345"
+                        required
+                      />
+                    </div>
                   </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="stock">Stock Number</Label>
-                    <Input
-                      id="stock"
-                      value={formData.stock}
-                      onChange={(e) => handleInputChange("stock", e.target.value)}
-                      placeholder="e.g. F22-0123"
-                      required
-                    />
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="status">Status</Label>
+                      <Select value={formData.status} onValueChange={(value) => handleInputChange("status", value)}>
+                        <SelectTrigger id="status">
+                          <SelectValue placeholder="Select status" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="AVAILABLE">Available</SelectItem>
+                          <SelectItem value="PENDING_SALE">Pending Sale</SelectItem>
+                          <SelectItem value="SOLD">Sold</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="featured">Featured</Label>
+                      <Select value={formData.featured.toString()} onValueChange={(value) => handleInputChange("featured", value === "true")}>
+                        <SelectTrigger id="featured">
+                          <SelectValue placeholder="Featured status" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="false">Not Featured</SelectItem>
+                          <SelectItem value="true">Featured</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
                   </div>
 
                   <div className="space-y-2">
@@ -480,48 +630,15 @@ export default function EditTruckPage({ params }: { params: Promise<{ id: string
               <Card>
                 <CardHeader>
                   <CardTitle>Truck Images</CardTitle>
-                  <CardDescription>Update high-quality images of the truck.</CardDescription>
+                  <CardDescription>Manage the truck's images. At least 1 image required.</CardDescription>
                 </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-8 text-center">
-                    <ImageIcon className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                    <h3 className="text-lg font-medium mb-2">Upload Images</h3>
-                    <p className="text-muted-foreground mb-4">Drag and drop images here, or click to select files</p>
-                    <Button onClick={handleAddImage}>
-                      <Upload className="mr-2 h-4 w-4" />
-                      Select Images
-                    </Button>
-                  </div>
-
-                  {images.length > 0 && (
-                    <div>
-                      <h4 className="font-medium mb-2">Current Images ({images.length})</h4>
-                      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                        {images.map((image, index) => (
-                          <div key={index} className="relative group">
-                            <div className="aspect-square bg-muted rounded-lg overflow-hidden">
-                              <div className="w-full h-full bg-gray-200 flex items-center justify-center">
-                                <ImageIcon className="h-8 w-8 text-gray-400" />
-                              </div>
-                            </div>
-                            <Button
-                              variant="destructive"
-                              size="icon"
-                              className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
-                              onClick={() => handleRemoveImage(index)}
-                            >
-                              <X className="h-4 w-4" />
-                            </Button>
-                            {index === 0 && (
-                              <div className="absolute bottom-2 left-2 bg-blue-600 text-white text-xs px-2 py-1 rounded">
-                                Main
-                              </div>
-                            )}
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
+                <CardContent>
+                  <ImageUpload
+                    images={images}
+                    onImagesChange={handleImagesChange}
+                    maxImages={10}
+                    maxFileSize={5}
+                  />
                 </CardContent>
               </Card>
             </TabsContent>
@@ -530,7 +647,7 @@ export default function EditTruckPage({ params }: { params: Promise<{ id: string
               <Card>
                 <CardHeader>
                   <CardTitle>Features & Specifications</CardTitle>
-                  <CardDescription>Update key features and specifications.</CardDescription>
+                  <CardDescription>Manage key features and specifications. At least 1 feature required.</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="flex gap-2">
@@ -540,7 +657,7 @@ export default function EditTruckPage({ params }: { params: Promise<{ id: string
                       onChange={(e) => setNewFeature(e.target.value)}
                       onKeyPress={(e) => e.key === "Enter" && handleAddFeature()}
                     />
-                    <Button onClick={handleAddFeature}>Add</Button>
+                    <Button onClick={() => handleAddFeature()}>Add</Button>
                   </div>
 
                   {features.length > 0 && (
@@ -558,6 +675,34 @@ export default function EditTruckPage({ params }: { params: Promise<{ id: string
                       </div>
                     </div>
                   )}
+
+                  <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                    <h4 className="font-medium text-green-900 mb-4">Feature Suggestions</h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {Object.entries(featureSuggestions).map(([category, suggestions]) => (
+                        <div key={category}>
+                          <p className="font-medium text-green-900 mb-2">{category}:</p>
+                          <div className="space-y-2">
+                            {suggestions.map((suggestion) => (
+                              <div key={suggestion} className="flex items-center justify-between">
+                                <span className="text-sm text-green-800">• {suggestion}</span>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="ml-2 h-6 text-xs"
+                                  onClick={() => handleAddFeature(suggestion)}
+                                  disabled={features.includes(suggestion)}
+                                >
+                                  <Plus className="h-3 w-3 mr-1" />
+                                  Add
+                                </Button>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
                 </CardContent>
               </Card>
             </TabsContent>
@@ -570,50 +715,63 @@ export default function EditTruckPage({ params }: { params: Promise<{ id: string
                 </CardHeader>
                 <CardContent className="space-y-6">
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div className="p-4 rounded-lg border border-green-200 bg-green-50">
+                    <div
+                      className={`p-4 rounded-lg border ${formValid.details ? "border-green-200 bg-green-50" : "border-red-200 bg-red-50"}`}
+                    >
                       <div className="flex items-center gap-2 mb-2">
-                        <Check className="h-5 w-5 text-green-600" />
+                        {formValid.details ? (
+                          <Check className="h-5 w-5 text-green-600" />
+                        ) : (
+                          <X className="h-5 w-5 text-red-600" />
+                        )}
                         <h4 className="font-medium">Basic Details</h4>
                       </div>
-                      <p className="text-sm text-muted-foreground">All required fields completed</p>
+                      <p className="text-sm text-muted-foreground">
+                        {formValid.details ? "All required fields completed" : "Missing required information"}
+                      </p>
                     </div>
 
-                    <div className="p-4 rounded-lg border border-green-200 bg-green-50">
+                    <div
+                      className={`p-4 rounded-lg border ${formValid.images ? "border-green-200 bg-green-50" : "border-red-200 bg-red-50"}`}
+                    >
                       <div className="flex items-center gap-2 mb-2">
-                        <Check className="h-5 w-5 text-green-600" />
+                        {formValid.images ? (
+                          <Check className="h-5 w-5 text-green-600" />
+                        ) : (
+                          <X className="h-5 w-5 text-red-600" />
+                        )}
                         <h4 className="font-medium">Images</h4>
                       </div>
-                      <p className="text-sm text-muted-foreground">{images.length} images uploaded</p>
+                      <p className="text-sm text-muted-foreground">
+                        {images.length} images (minimum 1 required)
+                      </p>
                     </div>
 
-                    <div className="p-4 rounded-lg border border-green-200 bg-green-50">
+                    <div
+                      className={`p-4 rounded-lg border ${formValid.features ? "border-green-200 bg-green-50" : "border-red-200 bg-red-50"}`}
+                    >
                       <div className="flex items-center gap-2 mb-2">
-                        <Check className="h-5 w-5 text-green-600" />
+                        {formValid.features ? (
+                          <Check className="h-5 w-5 text-green-600" />
+                        ) : (
+                          <X className="h-5 w-5 text-red-600" />
+                        )}
                         <h4 className="font-medium">Features</h4>
                       </div>
-                      <p className="text-sm text-muted-foreground">{features.length} features listed</p>
+                      <p className="text-sm text-muted-foreground">
+                        {features.length} features (minimum 1 required)
+                      </p>
                     </div>
                   </div>
 
                   <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                     <h4 className="font-medium text-blue-900 mb-2">Update Summary</h4>
-                    <div className="text-sm text-blue-800 space-y-1">
-                      <p>
-                        <strong>Title:</strong> {formData.title}
-                      </p>
-                      <p>
-                        <strong>Price:</strong> ${Number.parseInt(formData.price || "0").toLocaleString()}
-                      </p>
-                      <p>
-                        <strong>Year:</strong> {formData.year}
-                      </p>
-                      <p>
-                        <strong>Model:</strong> {formData.model}
-                      </p>
-                      <p>
-                        <strong>Mileage:</strong> {Number.parseInt(formData.mileage || "0").toLocaleString()} miles
-                      </p>
-                    </div>
+                    <ul className="text-sm text-blue-800 space-y-1">
+                      <li>✓ Truck details will be updated</li>
+                      <li>✓ Images will be replaced with current selection</li>
+                      <li>✓ Features will be updated</li>
+                      <li>✓ Status and featured settings will be applied</li>
+                    </ul>
                   </div>
                 </CardContent>
               </Card>
@@ -631,15 +789,18 @@ export default function EditTruckPage({ params }: { params: Promise<{ id: string
                     <ChevronRight className="ml-2 h-4 w-4" />
                   </Button>
                 ) : (
-                  <Button onClick={handleSubmit}>
+                  <Button
+                    onClick={handleSubmit}
+                    disabled={!formValid.details || !formValid.images || !formValid.features || isSubmitting}
+                  >
                     <Save className="mr-2 h-4 w-4" />
-                    Update Listing
+                    {isSubmitting ? "Updating..." : "Update Listing"}
                   </Button>
                 )}
               </div>
             </div>
           </Tabs>
-        </main>
+        </div>
       </div>
     </div>
   )

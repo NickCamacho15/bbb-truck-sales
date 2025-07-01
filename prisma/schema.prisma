@@ -40,9 +40,10 @@ model Truck {
   createdAt    DateTime    @default(now())
   updatedAt    DateTime    @updatedAt
 
-  images   TruckImage[]
-  features TruckFeature[]
-  inquiries Inquiry[]
+  images     TruckImage[]
+  features   TruckFeature[]
+  inquiries  Inquiry[]
+  truckViews TruckView[]
 
   @@map("trucks")
 }
@@ -84,6 +85,18 @@ model Inquiry {
   truck Truck? @relation(fields: [truckId], references: [id])
 
   @@map("inquiries")
+}
+
+model TruckView {
+  id        String   @id @default(cuid())
+  truckId   String
+  timestamp DateTime @default(now())
+  ipHash    String?  // Hashed IP address to avoid storing PII
+  sessionId String?  // Optional client session ID
+  
+  truck     Truck    @relation(fields: [truckId], references: [id], onDelete: Cascade)
+  
+  @@map("truck_views")
 }
 
 model FinancingApplication {

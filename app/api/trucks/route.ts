@@ -41,7 +41,9 @@ export async function GET(request: NextRequest) {
     const where: any = {}
 
     if (status && status !== "all") {
-      where.status = status
+      where.status = status.includes(",") 
+        ? { in: status.split(",") } 
+        : status;
     }
 
     if (model && model !== "all") {

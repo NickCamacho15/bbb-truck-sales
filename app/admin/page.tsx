@@ -17,20 +17,37 @@ export default function AdminLoginPage() {
   const [error, setError] = useState("")
   const [isLoading, setIsLoading] = useState(false)
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError("")
     setIsLoading(true)
 
-    // In a real application, this would be a proper authentication check
-    // For demo purposes, we're using a simple check
-    if (username === "admin" && password === "password") {
-      setTimeout(() => {
-        router.push("/admin/dashboard")
-      }, 1000)
-    } else {
+    try {
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ username, password }),
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Login failed')
+      }
+
+      const data = await response.json()
+      
+      // Store user data in localStorage for client-side use if needed
+      localStorage.setItem('user', JSON.stringify(data.user))
+      
+      // Redirect to dashboard
+      router.push("/admin/dashboard")
+    } catch (error) {
+      console.error('Login error:', error)
+      setError(error instanceof Error ? error.message : 'Login failed')
+    } finally {
       setIsLoading(false)
-      setError("Invalid username or password")
     }
   }
 

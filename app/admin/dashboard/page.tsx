@@ -1,283 +1,275 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { AdminHeader } from "@/components/admin-header"
-import { AdminSidebar } from "@/components/admin-sidebar"
-import { BarChart3, DollarSign, Package, ShoppingCart, TrendingUp, Truck, Users } from "lucide-react"
+import { BarChart3, DollarSign, Loader2, TrendingUp, Truck, Users, Eye } from "lucide-react"
+import React from "react"
+
+interface ActivityItem {
+  id: string
+  icon: React.ReactNode
+  title: string
+  description: string
+  time: string
+}
 
 export default function AdminDashboardPage() {
-  const [activeTab, setActiveTab] = useState("overview")
+  const [inventoryCount, setInventoryCount] = useState<number>(0)
+  const [inventoryDiff, setInventoryDiff] = useState<number>(0)
+  const [inquiryCount, setInquiryCount] = useState<number>(0)
+  const [inquiryDiff, setInquiryDiff] = useState<number>(0)
+  const [totalViews, setTotalViews] = useState<number>(0)
+  const [viewsDiff, setViewsDiff] = useState<number>(0)
+  const [recentActivity, setRecentActivity] = useState<ActivityItem[]>([])
+  const [loading, setLoading] = useState<boolean>(true)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    const fetchDashboardData = async () => {
+      try {
+        setLoading(true)
+        setError(null)
+
+        // Fetch inventory data - exclude SOLD trucks
+        const truckResponse = await fetch('/api/trucks?status=AVAILABLE,PENDING_SALE')
+        if (!truckResponse.ok) {
+          throw new Error('Failed to fetch inventory data')
+        }
+        const truckData = await truckResponse.json()
+        setInventoryCount(truckData.pagination.total || 0)
+        
+        // Calculate inventory difference (for demo purposes, set a relative diff)
+        const lastMonthCount = truckData.trucks.filter((t: any) => {
+          const createdDate = new Date(t.createdAt)
+          const monthAgo = new Date()
+          monthAgo.setMonth(monthAgo.getMonth() - 1)
+          return createdDate >= monthAgo
+        }).length
+        setInventoryDiff(lastMonthCount)
+
+        // Fetch inquiry data
+        const inquiryResponse = await fetch('/api/inquiries')
+        if (!inquiryResponse.ok) {
+          throw new Error('Failed to fetch inquiry data')
+        }
+        const inquiryData = await inquiryResponse.json()
+        setInquiryCount(inquiryData.pagination.total || 0)
+
+        // Calculate inquiry difference (recent inquiries in the last day)
+        const yesterdayCount = inquiryData.inquiries.filter((i: any) => {
+          const createdDate = new Date(i.createdAt)
+          const yesterday = new Date()
+          yesterday.setDate(yesterday.getDate() - 1)
+          return createdDate >= yesterday
+        }).length
+        setInquiryDiff(yesterdayCount)
+
+        // Fetch analytics data for truck views
+        try {
+          const analyticsResponse = await fetch('/api/analytics')
+          if (analyticsResponse.ok) {
+            const analyticsData = await analyticsResponse.json()
+            setTotalViews(analyticsData.totalViews || 0)
+            
+            // Get views from last 7 days for comparison
+            let recentViews = 0
+            if (analyticsData.viewsByDay && analyticsData.viewsByDay.length > 0) {
+              // Get views from the last day if available
+              recentViews = analyticsData.viewsByDay[analyticsData.viewsByDay.length - 1]?.count || 0
+            }
+            setViewsDiff(recentViews)
+          }
+        } catch (err) {
+          console.log('Analytics data not available')
+        }
+
+        // Generate recent activity from both trucks and inquiries
+        const combinedActivity: ActivityItem[] = []
+
+        // Add recent trucks as activity items
+        truckData.trucks.slice(0, 2).forEach((truck: any) => {
+          combinedActivity.push({
+            id: `truck-${truck.id}`,
+            icon: <Truck className="h-4 w-4" />,
+            title: "New Truck Added",
+            description: `${truck.year} ${truck.make} ${truck.model} added to inventory`,
+            time: formatTimeAgo(new Date(truck.createdAt))
+          })
+        })
+
+        // Add recent inquiries as activity items
+        inquiryData.inquiries.slice(0, 2).forEach((inquiry: any) => {
+          combinedActivity.push({
+            id: `inquiry-${inquiry.id}`,
+            icon: <Users className="h-4 w-4" />,
+            title: "New Inquiry",
+            description: `${inquiry.name} inquired about ${inquiry.truck ? inquiry.truck.make + ' ' + inquiry.truck.model : 'a vehicle'}`,
+            time: formatTimeAgo(new Date(inquiry.createdAt))
+          })
+        })
+
+        // Sort by date (most recent first)
+        combinedActivity.sort((a, b) => {
+          const timeA = parseTimeAgo(a.time)
+          const timeB = parseTimeAgo(b.time)
+          return timeA - timeB
+        })
+
+        setRecentActivity(combinedActivity)
+      } catch (err) {
+        console.error('Error fetching dashboard data:', err)
+        setError(err instanceof Error ? err.message : 'Failed to load dashboard data')
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchDashboardData()
+  }, [])
+
+  // Helper function to format timestamps as "X time ago"
+  const formatTimeAgo = (date: Date): string => {
+    const now = new Date()
+    const diffMs = now.getTime() - date.getTime()
+    const diffSec = Math.floor(diffMs / 1000)
+    const diffMin = Math.floor(diffSec / 60)
+    const diffHour = Math.floor(diffMin / 60)
+    const diffDay = Math.floor(diffHour / 24)
+    
+    if (diffDay > 0) {
+      return diffDay === 1 ? 'Yesterday' : `${diffDay} days ago`
+    }
+    if (diffHour > 0) {
+      return `${diffHour} hours ago`
+    }
+    if (diffMin > 0) {
+      return `${diffMin} minutes ago`
+    }
+    return 'Just now'
+  }
+
+  // Helper function to convert "X time ago" back to timestamp for sorting
+  const parseTimeAgo = (timeAgo: string): number => {
+    const now = new Date().getTime()
+    
+    if (timeAgo === 'Just now') return 0
+    
+    const match = timeAgo.match(/(\d+)\s+(\w+)\s+ago/)
+    if (!match) return now
+    
+    const amount = parseInt(match[1])
+    const unit = match[2]
+    
+    if (unit.includes('minute')) return amount * 60 * 1000
+    if (unit.includes('hour')) return amount * 60 * 60 * 1000
+    if (unit.includes('day')) return amount * 24 * 60 * 60 * 1000
+    if (timeAgo === 'Yesterday') return 24 * 60 * 60 * 1000
+    
+    return now
+  }
+
+  if (loading) {
+    return (
+      <div className="min-h-screen w-full">
+        <div className="flex flex-col">
+          <AdminHeader title="Dashboard" />
+          <main className="flex-1 p-6 flex items-center justify-center">
+            <div className="flex items-center gap-2">
+              <Loader2 className="h-6 w-6 animate-spin" />
+              <span>Loading dashboard data...</span>
+            </div>
+          </main>
+        </div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen w-full">
+        <div className="flex flex-col">
+          <AdminHeader title="Dashboard" />
+          <main className="flex-1 p-6 flex items-center justify-center">
+            <div className="text-center">
+              <p className="text-red-600 mb-4">Error: {error}</p>
+              <Button onClick={() => window.location.reload()}>Try Again</Button>
+            </div>
+          </main>
+        </div>
+      </div>
+    )
+  }
 
   return (
-    <div className="grid min-h-screen w-full lg:grid-cols-[280px_1fr]">
-      <AdminSidebar activePage="dashboard" />
-
+    <div className="min-h-screen w-full">
       <div className="flex flex-col">
         <AdminHeader title="Dashboard" />
 
-        <main className="flex-1 p-6">
-          <Tabs defaultValue="overview" value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-            <TabsList>
-              <TabsTrigger value="overview">Overview</TabsTrigger>
-              <TabsTrigger value="analytics">Analytics</TabsTrigger>
-              <TabsTrigger value="reports">Reports</TabsTrigger>
-              <TabsTrigger value="notifications">Notifications</TabsTrigger>
-            </TabsList>
+        <main className="flex-1 p-6 space-y-4">
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Available Inventory</CardTitle>
+                <Truck className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{inventoryCount}</div>
+                <p className="text-xs text-muted-foreground">+{inventoryDiff} from last month</p>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Active Inquiries</CardTitle>
+                <Users className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{inquiryCount}</div>
+                <p className="text-xs text-muted-foreground">+{inquiryDiff} since yesterday</p>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Total Views</CardTitle>
+                <Eye className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{totalViews}</div>
+                <p className="text-xs text-muted-foreground">+{viewsDiff} today</p>
+              </CardContent>
+            </Card>
+          </div>
 
-            <TabsContent value="overview" className="space-y-4">
-              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-                <Card>
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">Total Inventory</CardTitle>
-                    <Truck className="h-4 w-4 text-muted-foreground" />
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">42</div>
-                    <p className="text-xs text-muted-foreground">+2 from last month</p>
-                  </CardContent>
-                </Card>
-                <Card>
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">Monthly Sales</CardTitle>
-                    <DollarSign className="h-4 w-4 text-muted-foreground" />
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">$45,231</div>
-                    <p className="text-xs text-muted-foreground">+20.1% from last month</p>
-                  </CardContent>
-                </Card>
-                <Card>
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">Active Inquiries</CardTitle>
-                    <Users className="h-4 w-4 text-muted-foreground" />
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">12</div>
-                    <p className="text-xs text-muted-foreground">+3 since yesterday</p>
-                  </CardContent>
-                </Card>
-                <Card>
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">Pending Orders</CardTitle>
-                    <ShoppingCart className="h-4 w-4 text-muted-foreground" />
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">7</div>
-                    <p className="text-xs text-muted-foreground">+2 since last week</p>
-                  </CardContent>
-                </Card>
-              </div>
-
-              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-                <Card className="col-span-4">
-                  <CardHeader>
-                    <CardTitle>Sales Overview</CardTitle>
-                  </CardHeader>
-                  <CardContent className="pl-2">
-                    <div className="h-[200px] flex items-center justify-center bg-muted/20 rounded-md">
-                      <BarChart3 className="h-16 w-16 text-muted" />
-                      <span className="ml-2 text-muted">Sales chart will appear here</span>
-                    </div>
-                  </CardContent>
-                </Card>
-                <Card className="col-span-3">
-                  <CardHeader>
-                    <CardTitle>Recent Activity</CardTitle>
-                    <CardDescription>Latest updates and activities</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-4">
-                      {[
-                        {
-                          icon: <Truck className="h-4 w-4" />,
-                          title: "New Truck Added",
-                          description: "2023 Ford F-150 Lariat added to inventory",
-                          time: "2 hours ago",
-                        },
-                        {
-                          icon: <Users className="h-4 w-4" />,
-                          title: "New Inquiry",
-                          description: "John Doe inquired about F-250 Super Duty",
-                          time: "5 hours ago",
-                        },
-                        {
-                          icon: <DollarSign className="h-4 w-4" />,
-                          title: "Sale Completed",
-                          description: "2022 Ford Ranger sold to Sarah Johnson",
-                          time: "Yesterday",
-                        },
-                        {
-                          icon: <TrendingUp className="h-4 w-4" />,
-                          title: "Price Updated",
-                          description: "Price updated for 3 trucks in inventory",
-                          time: "2 days ago",
-                        },
-                      ].map((item, index) => (
-                        <div key={index} className="flex items-start gap-4">
-                          <div className="rounded-full p-2 bg-blue-100 text-blue-600">{item.icon}</div>
-                          <div className="space-y-1">
-                            <p className="text-sm font-medium">{item.title}</p>
-                            <p className="text-sm text-muted-foreground">{item.description}</p>
-                            <p className="text-xs text-muted-foreground">{item.time}</p>
-                          </div>
+          <div className="grid gap-4 md:grid-cols-1">
+            <Card>
+              <CardHeader>
+                <CardTitle>Recent Activity</CardTitle>
+                <CardDescription>Latest updates and activities</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {recentActivity.length > 0 ? (
+                    recentActivity.map((item, index) => (
+                      <div key={item.id} className="flex items-start gap-4">
+                        <div className="rounded-full p-2 bg-blue-100 text-blue-600">{item.icon}</div>
+                        <div className="space-y-1">
+                          <p className="text-sm font-medium">{item.title}</p>
+                          <p className="text-sm text-muted-foreground">{item.description}</p>
+                          <p className="text-xs text-muted-foreground">{item.time}</p>
                         </div>
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-
-              <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Inventory by Model</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-2">
-                      {[
-                        { model: "F-150", count: 18, percentage: 42 },
-                        { model: "F-250/F-350", count: 12, percentage: 28 },
-                        { model: "Ranger", count: 8, percentage: 19 },
-                        { model: "Maverick", count: 4, percentage: 11 },
-                      ].map((item, index) => (
-                        <div key={index} className="space-y-1">
-                          <div className="flex items-center justify-between">
-                            <span className="text-sm font-medium">{item.model}</span>
-                            <span className="text-sm text-muted-foreground">{item.count} trucks</span>
-                          </div>
-                          <div className="h-2 rounded-full bg-muted overflow-hidden">
-                            <div className="h-full bg-blue-600 rounded-full" style={{ width: `${item.percentage}%` }} />
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Quick Actions</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="grid grid-cols-2 gap-2">
-                      <Link href="/admin/inventory/new">
-                        <Button variant="outline" className="w-full justify-start">
-                          <Package className="mr-2 h-4 w-4" />
-                          Add Truck
-                        </Button>
-                      </Link>
-                      <Link href="/admin/inquiries">
-                        <Button variant="outline" className="w-full justify-start">
-                          <Users className="mr-2 h-4 w-4" />
-                          View Inquiries
-                        </Button>
-                      </Link>
-                      <Link href="/admin/inventory">
-                        <Button variant="outline" className="w-full justify-start">
-                          <Truck className="mr-2 h-4 w-4" />
-                          Manage Inventory
-                        </Button>
-                      </Link>
-                      <Link href="/admin/reports">
-                        <Button variant="outline" className="w-full justify-start">
-                          <BarChart3 className="mr-2 h-4 w-4" />
-                          Sales Report
-                        </Button>
-                      </Link>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Upcoming Tasks</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-4">
-                      {[
-                        {
-                          title: "Update inventory prices",
-                          dueDate: "Today",
-                          priority: "High",
-                        },
-                        {
-                          title: "Follow up with potential buyers",
-                          dueDate: "Tomorrow",
-                          priority: "Medium",
-                        },
-                        {
-                          title: "Schedule new truck photoshoot",
-                          dueDate: "Jun 10",
-                          priority: "Low",
-                        },
-                      ].map((task, index) => (
-                        <div key={index} className="flex items-start justify-between">
-                          <div>
-                            <p className="text-sm font-medium">{task.title}</p>
-                            <p className="text-xs text-muted-foreground">Due: {task.dueDate}</p>
-                          </div>
-                          <Badge priority={task.priority} />
-                        </div>
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-            </TabsContent>
-
-            <TabsContent
-              value="analytics"
-              className="h-[400px] flex items-center justify-center bg-muted/20 rounded-md"
-            >
-              <div className="text-center">
-                <BarChart3 className="h-16 w-16 mx-auto text-muted" />
-                <h3 className="mt-4 text-lg font-medium">Analytics Dashboard</h3>
-                <p className="text-muted-foreground">Detailed analytics will appear here</p>
-              </div>
-            </TabsContent>
-
-            <TabsContent value="reports" className="h-[400px] flex items-center justify-center bg-muted/20 rounded-md">
-              <div className="text-center">
-                <TrendingUp className="h-16 w-16 mx-auto text-muted" />
-                <h3 className="mt-4 text-lg font-medium">Reports Dashboard</h3>
-                <p className="text-muted-foreground">Generated reports will appear here</p>
-              </div>
-            </TabsContent>
-
-            <TabsContent
-              value="notifications"
-              className="h-[400px] flex items-center justify-center bg-muted/20 rounded-md"
-            >
-              <div className="text-center">
-                <Users className="h-16 w-16 mx-auto text-muted" />
-                <h3 className="mt-4 text-lg font-medium">Notifications Dashboard</h3>
-                <p className="text-muted-foreground">System notifications will appear here</p>
-              </div>
-            </TabsContent>
-          </Tabs>
+                      </div>
+                    ))
+                  ) : (
+                    <p className="text-sm text-muted-foreground">No recent activity found</p>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         </main>
       </div>
     </div>
   )
-}
-
-function Badge({ priority }: { priority: string }) {
-  const getColor = () => {
-    switch (priority) {
-      case "High":
-        return "bg-red-100 text-red-800"
-      case "Medium":
-        return "bg-yellow-100 text-yellow-800"
-      case "Low":
-        return "bg-green-100 text-green-800"
-      default:
-        return "bg-gray-100 text-gray-800"
-    }
-  }
-
-  return <span className={`text-xs px-2 py-1 rounded-full ${getColor()}`}>{priority}</span>
 }

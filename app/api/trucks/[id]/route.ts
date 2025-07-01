@@ -2,6 +2,7 @@ import { type NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { getCurrentUser } from "@/lib/auth"
 import { z } from "zod"
+import { createHash } from "crypto"
 
 const updateTruckSchema = z.object({
   title: z.string().min(1).optional(),
@@ -28,11 +29,17 @@ const updateTruckSchema = z.object({
   features: z.array(z.string()).optional(),
 })
 
+// Function to hash IP address to avoid storing PII
+function hashIp(ip: string): string {
+  return createHash('sha256').update(ip + process.env.IP_HASH_SALT || 'salt').digest('hex')
+}
+
 // GET /api/trucks/[id] - Get a specific truck
-export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const { id } = await params
     const truck = await prisma.truck.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         images: {
           orderBy: { sortOrder: "asc" },
@@ -45,6 +52,48 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
       return NextResponse.json({ error: "Truck not found" }, { status: 404 })
     }
 
+    // Log the view if it's from the public site (not from admin)
+    const referer = request.headers.get('referer') || ''
+    const isAdmin = referer.includes('/admin/')
+    if (!isAdmin) {
+      // Get client IP address
+      const ip = request.headers.get('x-forwarded-for') || request.ip || '127.0.0.1'
+      const ipHash = hashIp(ip.split(',')[0])
+      
+      // Get or create session ID from cookies
+      const sessionId = request.cookies.get('session_id')?.value
+      
+      // Check if this view has already been counted recently (within 30 minutes)
+      const thirtyMinutesAgo = new Date(Date.now() - 30 * 60 * 1000)
+      const recentView = await prisma.truckView.findFirst({
+        where: {
+          truckId: id,
+          timestamp: {
+            gte: thirtyMinutesAgo
+          },
+          AND: [
+            {
+              OR: [
+                { sessionId: sessionId },
+                { ipHash: ipHash }
+              ]
+            }
+          ]
+        }
+      })
+      
+      // Only log the view if there's no recent view from this session/IP
+      if (!recentView) {
+        await prisma.truckView.create({
+          data: {
+            truckId: id,
+            ipHash,
+            sessionId,
+          },
+        })
+      }
+    }
+
     return NextResponse.json(truck)
   } catch (error) {
     console.error("Error fetching truck:", error)
@@ -53,8 +102,9 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
 }
 
 // PUT /api/trucks/[id] - Update a truck (admin only)
-export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
+export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const { id } = await params
     const user = await getCurrentUser(request)
     if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
@@ -69,7 +119,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
     const truck = await prisma.$transaction(async (tx) => {
       // Update the truck
       const updatedTruck = await tx.truck.update({
-        where: { id: params.id },
+        where: { id },
         data: truckData,
       })
 
@@ -77,14 +127,14 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
       if (images !== undefined) {
         // Delete existing images
         await tx.truckImage.deleteMany({
-          where: { truckId: params.id },
+          where: { truckId: id },
         })
 
         // Create new images
         if (images.length > 0) {
           await tx.truckImage.createMany({
             data: images.map((url, index) => ({
-              truckId: params.id,
+              truckId: id,
               imageUrl: url,
               isPrimary: index === 0,
               sortOrder: index,
@@ -97,14 +147,14 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
       if (features !== undefined) {
         // Delete existing features
         await tx.truckFeature.deleteMany({
-          where: { truckId: params.id },
+          where: { truckId: id },
         })
 
         // Create new features
         if (features.length > 0) {
           await tx.truckFeature.createMany({
             data: features.map((name) => ({
-              truckId: params.id,
+              truckId: id,
               featureName: name,
             })),
           })
@@ -113,7 +163,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
 
       // Return the updated truck with relations
       return tx.truck.findUnique({
-        where: { id: params.id },
+        where: { id },
         include: {
           images: {
             orderBy: { sortOrder: "asc" },
@@ -135,16 +185,56 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
   }
 }
 
-// DELETE /api/trucks/[id] - Delete a truck (admin only)
-export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
+// PATCH /api/trucks/[id] - Update specific fields of a truck (admin only)
+export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const { id } = await params
+    const user = await getCurrentUser(request)
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    }
+
+    const body = await request.json()
+    const data = updateTruckSchema.parse(body)
+
+    // Extract images and features like in PUT handler
+    const { images, features, ...truckData } = data
+
+    // Update truck with simple fields only
+    const updatedTruck = await prisma.truck.update({
+      where: { id },
+      data: truckData,
+      include: {
+        images: {
+          orderBy: { sortOrder: "asc" },
+        },
+        features: true,
+      },
+    })
+
+    return NextResponse.json(updatedTruck)
+  } catch (error) {
+    console.error("Error updating truck:", error)
+
+    if (error instanceof z.ZodError) {
+      return NextResponse.json({ error: "Invalid data", details: error.errors }, { status: 400 })
+    }
+
+    return NextResponse.json({ error: "Failed to update truck" }, { status: 500 })
+  }
+}
+
+// DELETE /api/trucks/[id] - Delete a truck (admin only)
+export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  try {
+    const { id } = await params
     const user = await getCurrentUser(request)
     if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
     await prisma.truck.delete({
-      where: { id: params.id },
+      where: { id },
     })
 
     return NextResponse.json({ message: "Truck deleted successfully" })
