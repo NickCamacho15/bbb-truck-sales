@@ -113,11 +113,23 @@ export default function NewTruckPage() {
 
   const handleNextTab = () => {
     if (activeTab === "details") {
-      if (validateDetailsTab()) setActiveTab("images")
+      if (validateDetailsTab()) {
+        setActiveTab("images")
+      } else {
+        alert("Please fill out all required fields before proceeding.")
+      }
     } else if (activeTab === "images") {
-      if (validateImagesTab()) setActiveTab("features")
+      if (validateImagesTab()) {
+        setActiveTab("features")
+      } else {
+        alert("Please upload at least 3 images before proceeding.")
+      }
     } else if (activeTab === "features") {
-      if (validateFeaturesTab()) setActiveTab("review")
+      if (validateFeaturesTab()) {
+        setActiveTab("review")
+      } else {
+        alert("Please add at least 3 features before proceeding.")
+      }
     }
   }
 
@@ -264,11 +276,12 @@ export default function NewTruckPage() {
                 <CardHeader>
                   <CardTitle>Basic Details</CardTitle>
                   <CardDescription>Enter the basic information about the truck.</CardDescription>
+                  <p className="text-xs text-muted-foreground">* indicates a required field</p>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label htmlFor="title">Truck Title</Label>
+                      <Label htmlFor="title">Truck Title *</Label>
                       <Input 
                         id="title" 
                         placeholder="e.g. 2022 Ford F-150 XLT" 
@@ -279,7 +292,7 @@ export default function NewTruckPage() {
                       <p className="text-xs text-muted-foreground">Include year, make, model, and trim</p>
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="price">Price ($)</Label>
+                      <Label htmlFor="price">Price ($) *</Label>
                       <Input 
                         id="price" 
                         type="number" 
@@ -293,7 +306,7 @@ export default function NewTruckPage() {
 
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div className="space-y-2">
-                      <Label htmlFor="year">Year</Label>
+                      <Label htmlFor="year">Year *</Label>
                       <Input 
                         id="year" 
                         type="number" 
@@ -304,7 +317,7 @@ export default function NewTruckPage() {
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="make">Make</Label>
+                      <Label htmlFor="make">Make *</Label>
                       <Input 
                         id="make" 
                         placeholder="e.g. Ford, Chevrolet, Toyota" 
@@ -314,7 +327,7 @@ export default function NewTruckPage() {
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="model">Model</Label>
+                      <Label htmlFor="model">Model *</Label>
                       <Input 
                         id="model" 
                         placeholder="e.g. F-150, Silverado, Tundra" 
@@ -327,7 +340,7 @@ export default function NewTruckPage() {
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label htmlFor="trim">Trim Level</Label>
+                      <Label htmlFor="trim">Trim Level *</Label>
                       <Input 
                         id="trim" 
                         placeholder="e.g. XLT, Lariat, King Ranch" 
@@ -337,7 +350,7 @@ export default function NewTruckPage() {
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="mileage">Mileage</Label>
+                      <Label htmlFor="mileage">Mileage *</Label>
                       <Input 
                         id="mileage" 
                         type="number" 
@@ -351,7 +364,7 @@ export default function NewTruckPage() {
 
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div className="space-y-2">
-                      <Label htmlFor="fuel-type">Fuel Type</Label>
+                      <Label htmlFor="fuel-type">Fuel Type *</Label>
                       <Select value={formData.fuelType} onValueChange={(value) => handleInputChange('fuelType', value)}>
                         <SelectTrigger id="fuel-type">
                           <SelectValue placeholder="Select fuel type" />
@@ -365,7 +378,7 @@ export default function NewTruckPage() {
                       </Select>
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="transmission">Transmission</Label>
+                      <Label htmlFor="transmission">Transmission *</Label>
                       <Select value={formData.transmission} onValueChange={(value) => handleInputChange('transmission', value)}>
                         <SelectTrigger id="transmission">
                           <SelectValue placeholder="Select transmission" />
@@ -377,7 +390,7 @@ export default function NewTruckPage() {
                       </Select>
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="drivetrain">Drivetrain</Label>
+                      <Label htmlFor="drivetrain">Drivetrain *</Label>
                       <Select value={formData.drivetrain} onValueChange={(value) => handleInputChange('drivetrain', value)}>
                         <SelectTrigger id="drivetrain">
                           <SelectValue placeholder="Select drivetrain" />
@@ -393,7 +406,7 @@ export default function NewTruckPage() {
 
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div className="space-y-2">
-                      <Label htmlFor="color">Exterior Color</Label>
+                      <Label htmlFor="color">Exterior Color *</Label>
                       <Input 
                         id="color" 
                         placeholder="e.g. Oxford White" 
@@ -403,7 +416,7 @@ export default function NewTruckPage() {
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="vin">VIN</Label>
+                      <Label htmlFor="vin">VIN *</Label>
                       <Input 
                         id="vin" 
                         placeholder="e.g. 1FTEW1EP5NKD12345" 
@@ -413,7 +426,7 @@ export default function NewTruckPage() {
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="stock-number">Stock Number</Label>
+                      <Label htmlFor="stock-number">Stock Number *</Label>
                       <Input
                         id="stock-number"
                         placeholder="e.g. STK12345"
@@ -425,7 +438,7 @@ export default function NewTruckPage() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="description">Description</Label>
+                    <Label htmlFor="description">Description *</Label>
                     <Textarea
                       id="description"
                       placeholder="Provide a detailed description of the truck's condition, features, and any notable details..."
@@ -434,7 +447,6 @@ export default function NewTruckPage() {
                       onChange={(e) => handleInputChange('description', e.target.value)}
                       required
                     />
-                    <p className="text-xs text-muted-foreground">Minimum 100 characters required</p>
                   </div>
                 </CardContent>
               </Card>
@@ -591,14 +603,14 @@ export default function NewTruckPage() {
               </Card>
             </TabsContent>
 
-            <div className="flex justify-between">
-              <Button variant="outline" onClick={handlePrevTab} disabled={activeTab === "details"}>
+            <div className="flex justify-between mt-8">
+              <Button variant="outline" onClick={handlePrevTab} disabled={activeTab === "details"} className="px-6 py-2">
                 Previous
               </Button>
 
               <div className="flex gap-2">
                 {activeTab !== "review" ? (
-                  <Button onClick={handleNextTab}>
+                  <Button onClick={handleNextTab} className="px-6 py-2">
                     Next
                     <ChevronRight className="ml-2 h-4 w-4" />
                   </Button>
@@ -606,6 +618,7 @@ export default function NewTruckPage() {
                   <Button
                     onClick={handleSubmit}
                     disabled={!formValid.details || !formValid.images || !formValid.features || isSubmitting}
+                    className="px-6 py-2"
                   >
                     <Save className="mr-2 h-4 w-4" />
                     {isSubmitting ? "Creating Listing..." : "Publish Listing"}

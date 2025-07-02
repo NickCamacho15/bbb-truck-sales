@@ -78,17 +78,6 @@ export function SiteFooter() {
 
         <div className="border-t border-gray-800 mt-12 pt-8 text-center text-sm">
           <p>&copy; 2025 BBB Truck Sales. All rights reserved.</p>
-          <div className="mt-2 space-x-4">
-            <Link href="/privacy" className="hover:text-blue-400 transition-colors">
-              Privacy Policy
-            </Link>
-            <Link href="/terms" className="hover:text-blue-400 transition-colors">
-              Terms of Service
-            </Link>
-            <Link href="/sitemap" className="hover:text-blue-400 transition-colors">
-              Sitemap
-            </Link>
-          </div>
         </div>
       </div>
     </footer>

@@ -40,7 +40,7 @@ export function HeroSection() {
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-4">{slide.title}</h1>
             <p className="text-xl md:text-2xl mb-8 max-w-2xl">{slide.subtitle}</p>
             <Link href={slide.link}>
-              <Button size="lg" className="bg-blue-600 hover:bg-blue-700">
+              <Button size="lg" className="bg-white hover:bg-white/90 text-black font-bold">
                 {slide.cta} <ChevronRight className="ml-2 h-4 w-4" />
               </Button>
             </Link>
