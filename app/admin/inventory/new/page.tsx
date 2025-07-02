@@ -450,7 +450,6 @@ export default function NewTruckPage() {
                   <ImageUpload
                     images={images}
                     onImagesChange={handleImagesChange}
-                    maxImages={10}
                     maxFileSize={5}
                   />
                 </CardContent>

@@ -636,7 +636,6 @@ export default function EditTruckPage({ params }: { params: Promise<{ id: string
                   <ImageUpload
                     images={images}
                     onImagesChange={handleImagesChange}
-                    maxImages={10}
                     maxFileSize={5}
                   />
                 </CardContent>

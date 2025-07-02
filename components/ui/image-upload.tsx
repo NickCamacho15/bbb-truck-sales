@@ -15,7 +15,7 @@ interface ImageUploadProps {
 export function ImageUpload({ 
   value = [], 
   onChange, 
-  maxImages = 10,
+  maxImages = 1000,
   className 
 }: ImageUploadProps) {
   const [isDragging, setIsDragging] = useState(false)
@@ -177,7 +177,7 @@ export function ImageUpload({
                 <div className="aspect-square bg-muted rounded-lg overflow-hidden flex items-center justify-center">
                   <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
                 </div>
-                <div className="absolute inset-0 bg-black/20 rounded-lg flex items-center justify-center">
+                <div className="absolute inset-0 bg-black/10 rounded-lg flex items-center justify-center">
                   <span className="text-white text-xs">Uploading...</span>
                 </div>
               </div>

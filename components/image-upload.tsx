@@ -3,7 +3,7 @@
 import { useState, useRef, DragEvent, ChangeEvent } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
-import { Upload, X, Image, Loader2 } from 'lucide-react'
+import { Upload, X, Image as ImageIcon, Loader2 } from 'lucide-react'
 
 interface UploadedImage {
   url: string
@@ -21,7 +21,7 @@ interface ImageUploadProps {
 export function ImageUpload({ 
   images, 
   onImagesChange, 
-  maxImages = 10,
+  maxImages = 1000,
   maxFileSize = 5 
 }: ImageUploadProps) {
   const [uploading, setUploading] = useState(false)
@@ -148,7 +148,7 @@ export function ImageUpload({
                 Drag and drop images here, or click to select files
               </p>
               <p className="text-sm text-gray-500 mb-4">
-                Maximum {maxImages} images • Max {maxFileSize}MB per file • JPEG, PNG, WebP
+                Max {maxFileSize}MB per file • JPEG, PNG, WebP
               </p>
               <Button 
                 onClick={() => fileInputRef.current?.click()}
@@ -183,7 +183,7 @@ export function ImageUpload({
                   alt={`Upload ${index + 1}`}
                   className="w-full h-full object-cover"
                 />
-                <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all duration-200 flex items-center justify-center">
+                <div className="absolute inset-0 bg-transparent group-hover:bg-black/20 transition-all duration-200 flex items-center justify-center">
                   <Button
                     variant="destructive"
                     size="sm"
@@ -207,7 +207,7 @@ export function ImageUpload({
       {/* Requirements Info */}
       {images.length < 3 && (
         <div className="flex items-start space-x-2 p-4 bg-blue-50 rounded-lg">
-          <Image className="h-5 w-5 text-blue-500 mt-0.5" />
+          <ImageIcon className="h-5 w-5 text-blue-500 mt-0.5" />
           <div className="text-sm">
             <p className="font-medium text-blue-900">Image Requirements</p>
             <ul className="text-blue-700 mt-1 space-y-1">
