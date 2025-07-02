@@ -61,6 +61,8 @@ export async function GET(request: NextRequest) {
 
     if (featured === "true") {
       where.featured = true
+      // Always exclude SOLD trucks from featured results
+      where.status = { not: "SOLD" }
     }
 
     const [trucks, total] = await Promise.all([

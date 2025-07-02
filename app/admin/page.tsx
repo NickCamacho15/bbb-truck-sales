@@ -52,12 +52,12 @@ export default function AdminLoginPage() {
   }
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-100">
-      <Card className="w-full max-w-md">
+    <div className="flex items-center justify-center min-h-screen bg-background">
+      <Card className="w-full max-w-md border shadow-lg">
         <CardHeader className="space-y-1">
           <div className="flex justify-center mb-4">
-            <div className="h-12 w-12 rounded-full bg-blue-100 flex items-center justify-center">
-              <Truck className="h-6 w-6 text-blue-600" />
+            <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
+              <Truck className="h-6 w-6 text-primary" />
             </div>
           </div>
           <CardTitle className="text-2xl text-center">Admin Login</CardTitle>
@@ -68,7 +68,7 @@ export default function AdminLoginPage() {
         <CardContent>
           <form onSubmit={handleSubmit}>
             {error && (
-              <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+              <div className="bg-destructive/10 border border-destructive text-destructive px-4 py-3 rounded mb-4">
                 <p>{error}</p>
               </div>
             )}

@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { Button } from "@/components/ui/button"
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
+import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle } from "@/components/ui/sheet"
 import {
   NavigationMenu,
   NavigationMenuContent,
@@ -41,6 +41,12 @@ export function SiteHeader() {
   const [isOpen, setIsOpen] = useState(false)
   const pathname = usePathname()
   const isAdminPage = pathname?.startsWith('/admin') || false
+  const isAdminLoginPage = pathname === '/admin'
+  
+  // Hide header on admin login page
+  if (isAdminLoginPage) {
+    return null
+  }
 
   // Admin navigation items
   const adminNavItems = [
@@ -206,8 +212,11 @@ export function SiteHeader() {
                 <span className="sr-only">Toggle menu</span>
               </Button>
             </SheetTrigger>
-            <SheetContent side="right">
-              <nav className="flex flex-col gap-4 mt-8">
+            <SheetContent side="right" className="w-72 p-0">
+              <SheetHeader className="px-4 pt-4 pb-2 text-left border-b">
+                <SheetTitle>Menu</SheetTitle>
+              </SheetHeader>
+              <nav className="flex flex-col gap-4 mt-4 px-4">
                 {isAdminPage ? (
                   <>
                     {adminNavItems.map((item) => (
@@ -218,14 +227,6 @@ export function SiteHeader() {
                         </Button>
                       </Link>
                     ))}
-                    <Button variant="ghost" className="w-full justify-start mt-2">
-                      <User className="h-4 w-4 mr-2" />
-                      Profile
-                    </Button>
-                    <Button variant="ghost" className="w-full justify-start">
-                      <Settings className="h-4 w-4 mr-2" />
-                      Settings
-                    </Button>
                     <Link href="/admin" onClick={() => setIsOpen(false)}>
                       <Button variant="ghost" className="w-full justify-start text-red-500">
                         <LogOut className="h-4 w-4 mr-2" />

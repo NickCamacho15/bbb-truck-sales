@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import Link from "next/link"
 import { AdminHeader } from "@/components/admin-header"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
@@ -165,12 +165,12 @@ export default function AdminInquiriesPage() {
     })
   }
 
-  const getStatusColor = (status: string) => {
+  const getStatusBadgeVariant = (status: string) => {
     switch (status) {
-      case "NEW": return "bg-blue-100 text-blue-800"
-      case "CONTACTED": return "bg-yellow-100 text-yellow-800"
-      case "CLOSED": return "bg-green-100 text-green-800"
-      default: return "bg-gray-100 text-gray-800"
+      case "NEW": return "blue"
+      case "CONTACTED": return "yellow"
+      case "CLOSED": return "green"
+      default: return "secondary"
     }
   }
 
@@ -238,11 +238,11 @@ export default function AdminInquiriesPage() {
                   </div>
                 </div>
 
-                <div className="flex flex-col sm:flex-row gap-4">
+                <div className="flex flex-row gap-4 flex-wrap">
                   <div className="flex items-center gap-2">
                     <Filter className="h-4 w-4 text-muted-foreground" />
                     <Select value={statusFilter} onValueChange={setStatusFilter}>
-                      <SelectTrigger className="w-[180px]">
+                      <SelectTrigger className="w-[140px]">
                         <SelectValue placeholder="Filter by status" />
                       </SelectTrigger>
                       <SelectContent>
@@ -257,13 +257,16 @@ export default function AdminInquiriesPage() {
                   <div className="flex items-center gap-2">
                     <Filter className="h-4 w-4 text-muted-foreground" />
                     <Select value={typeFilter} onValueChange={setTypeFilter}>
-                      <SelectTrigger className="w-[180px]">
+                      <SelectTrigger className="w-[140px]">
                         <SelectValue placeholder="Filter by type" />
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="all">All Types</SelectItem>
                         <SelectItem value="GENERAL">General</SelectItem>
                         <SelectItem value="SALES">Sales</SelectItem>
+                        <SelectItem value="TEST_DRIVE">Test Drive</SelectItem>
+                        <SelectItem value="FINANCING">Financing</SelectItem>
+                        <SelectItem value="SERVICE">Service</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -272,109 +275,183 @@ export default function AdminInquiriesPage() {
             </CardContent>
           </Card>
 
-          <div className="overflow-x-auto bg-white rounded-lg border">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Name
-                  </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Email/Phone
-                  </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Type
-                  </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Interested In
-                  </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Date
-                  </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Status
-                  </th>
-                  <th scope="col" className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {loading && inquiries.length === 0 ? (
-                  <tr>
-                    <td colSpan={7} className="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-500">
-                      <div className="flex items-center justify-center gap-2">
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                        <span>Loading...</span>
+          {/* Mobile View - Cards */}
+          <div className="md:hidden space-y-4">
+            {loading && inquiries.length === 0 ? (
+              <div className="p-4 text-center">
+                <Loader2 className="h-6 w-6 animate-spin mx-auto mb-2" />
+                <span>Loading inquiries...</span>
+              </div>
+            ) : filteredInquiries.length === 0 ? (
+              <div className="p-4 text-center text-gray-500">
+                No inquiries found
+              </div>
+            ) : (
+              filteredInquiries.map((inquiry) => (
+                <Card key={inquiry.id} className="overflow-hidden">
+                  <CardHeader className="pb-2">
+                    <div className="flex justify-between items-start">
+                      <CardTitle className="text-lg">{inquiry.name}</CardTitle>
+                      <Badge variant={getStatusBadgeVariant(inquiry.status) as any}>
+                        {inquiry.status === "NEW" ? "New" : 
+                         inquiry.status === "CONTACTED" ? "Contacted" : "Closed"}
+                      </Badge>
+                    </div>
+                    <p className="text-sm text-gray-500">{formatDate(inquiry.createdAt)}</p>
+                  </CardHeader>
+                  <CardContent className="pb-2 pt-0">
+                    <div className="space-y-2">
+                      <div className="flex flex-col">
+                        <span className="text-xs text-gray-500">Contact:</span>
+                        <span className="text-sm">{inquiry.email}</span>
+                        {inquiry.phone && <span className="text-sm">{inquiry.phone}</span>}
                       </div>
-                    </td>
-                  </tr>
-                ) : filteredInquiries.length === 0 ? (
-                  <tr>
-                    <td colSpan={7} className="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-500">
-                      No inquiries found
-                    </td>
-                  </tr>
-                ) : (
-                  filteredInquiries.map((inquiry) => (
-                    <tr key={inquiry.id}>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm font-medium text-gray-900">{inquiry.name}</div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="text-sm text-gray-900">{inquiry.email}</div>
-                        {inquiry.phone && (
-                          <div className="text-sm text-gray-500">{inquiry.phone}</div>
-                        )}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-900">{formatInquiryType(inquiry.inquiryType)}</div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="text-sm text-gray-900 max-w-xs truncate">
-                          {inquiry.truck ? 
-                            `${inquiry.truck.year} ${inquiry.truck.make} ${inquiry.truck.model} - ${inquiry.truck.title}` :
-                            "General Inquiry"}
+                      
+                      <div className="flex flex-col">
+                        <span className="text-xs text-gray-500">Inquiry Type:</span>
+                        <span className="text-sm">{formatInquiryType(inquiry.inquiryType)}</span>
+                      </div>
+                      
+                      {inquiry.truck && (
+                        <div className="flex flex-col">
+                          <span className="text-xs text-gray-500">Interested In:</span>
+                          <span className="text-sm">{inquiry.truck.year} {inquiry.truck.make} {inquiry.truck.model} - {inquiry.truck.title}</span>
                         </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-900">{formatDate(inquiry.createdAt)}</div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`inline-flex rounded-full px-2 text-xs font-semibold leading-5 ${getStatusColor(inquiry.status)}`}>
-                          {inquiry.status === "NEW" ? "New" : 
-                           inquiry.status === "CONTACTED" ? "Contacted" : "Closed"}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
-                        <div className="flex justify-center gap-2">
-                          <Link href={`/admin/inquiries/${inquiry.id}`}>
-                            <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-blue-500 hover:text-blue-600" title="View inquiry details">
-                              <Eye className="h-4 w-4" />
-                              <span className="sr-only">View</span>
-                            </Button>
-                          </Link>
-                          <Button 
-                            variant="ghost" 
-                            size="sm" 
-                            className="h-8 w-8 p-0 text-red-500 hover:text-red-600" 
-                            onClick={() => deleteInquiry(inquiry.id)}
-                            disabled={deletingId === inquiry.id}
-                            title="Delete inquiry"
-                          >
-                            {deletingId === inquiry.id ? 
-                              <Loader2 className="h-4 w-4 animate-spin" /> : 
-                              <Trash2 className="h-4 w-4" />
-                            }
-                            <span className="sr-only">Delete</span>
-                          </Button>
+                      )}
+                    </div>
+                  </CardContent>
+                  <CardFooter className="flex justify-end gap-2 pt-2">
+                    <Link href={`/admin/inquiries/${inquiry.id}`}>
+                      <Button variant="outline" size="sm" className="text-blue-500 hover:text-blue-600">
+                        <Eye className="h-4 w-4 mr-1" />
+                        View
+                      </Button>
+                    </Link>
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      className="text-red-500 hover:text-red-600"
+                      onClick={() => deleteInquiry(inquiry.id)}
+                      disabled={deletingId === inquiry.id}
+                    >
+                      {deletingId === inquiry.id ? 
+                        <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : 
+                        <Trash2 className="h-4 w-4 mr-1" />
+                      }
+                      Delete
+                    </Button>
+                  </CardFooter>
+                </Card>
+              ))
+            )}
+          </div>
+
+          {/* Desktop View - Table */}
+          <div className="hidden md:block overflow-x-auto">
+            <div className="rounded-lg border bg-card text-card-foreground shadow">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b">
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
+                      Name
+                    </th>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
+                      Email/Phone
+                    </th>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
+                      Type
+                    </th>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
+                      Interested In
+                    </th>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
+                      Date
+                    </th>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
+                      Status
+                    </th>
+                    <th scope="col" className="px-6 py-3 text-center text-xs font-medium uppercase tracking-wider">
+                      Actions
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y">
+                  {loading && inquiries.length === 0 ? (
+                    <tr>
+                      <td colSpan={7} className="px-6 py-4 whitespace-nowrap text-center text-sm">
+                        <div className="flex items-center justify-center gap-2">
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                          <span>Loading...</span>
                         </div>
                       </td>
                     </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
+                  ) : filteredInquiries.length === 0 ? (
+                    <tr>
+                      <td colSpan={7} className="px-6 py-4 whitespace-nowrap text-center text-sm text-muted-foreground">
+                        No inquiries found
+                      </td>
+                    </tr>
+                  ) : (
+                    filteredInquiries.map((inquiry) => (
+                      <tr key={inquiry.id}>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="text-sm font-medium">{inquiry.name}</div>
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="text-sm">{inquiry.email}</div>
+                          {inquiry.phone && (
+                            <div className="text-sm text-muted-foreground">{inquiry.phone}</div>
+                          )}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="text-sm">{formatInquiryType(inquiry.inquiryType)}</div>
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="text-sm max-w-xs truncate">
+                            {inquiry.truck ? 
+                              `${inquiry.truck.year} ${inquiry.truck.make} ${inquiry.truck.model} - ${inquiry.truck.title}` :
+                              "General Inquiry"}
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="text-sm">{formatDate(inquiry.createdAt)}</div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <Badge variant={getStatusBadgeVariant(inquiry.status) as any}>
+                            {inquiry.status === "NEW" ? "New" : 
+                             inquiry.status === "CONTACTED" ? "Contacted" : "Closed"}
+                          </Badge>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
+                          <div className="flex justify-center gap-2">
+                            <Link href={`/admin/inquiries/${inquiry.id}`}>
+                              <Button variant="ghost" size="sm" className="h-8 w-8 p-0" title="View inquiry details">
+                                <Eye className="h-4 w-4" />
+                                <span className="sr-only">View</span>
+                              </Button>
+                            </Link>
+                            <Button 
+                              variant="ghost" 
+                              size="sm" 
+                              className="h-8 w-8 p-0 text-destructive" 
+                              onClick={() => deleteInquiry(inquiry.id)}
+                              disabled={deletingId === inquiry.id}
+                              title="Delete inquiry"
+                            >
+                              {deletingId === inquiry.id ? 
+                                <Loader2 className="h-4 w-4 animate-spin" /> : 
+                                <Trash2 className="h-4 w-4" />
+                              }
+                              <span className="sr-only">Delete</span>
+                            </Button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
           </div>
 
           {/* Pagination */}

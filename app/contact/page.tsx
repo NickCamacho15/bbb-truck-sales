@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Clock, Mail, MapPin, Phone } from "lucide-react"
+import { useSearchParams } from "next/navigation"
 
 export default function ContactPage() {
   return (
@@ -116,6 +117,10 @@ function ContactForm() {
   const [isLoadingTrucks, setIsLoadingTrucks] = useState(true)
   const [trucksError, setTrucksError] = useState<string | null>(null)
 
+  // Get the truck ID from URL query parameter if it exists
+  const searchParams = useSearchParams()
+  const truckIdFromUrl = searchParams.get('truck')
+
   // Fetch available trucks
   useEffect(() => {
     const fetchTrucks = async () => {
@@ -132,6 +137,15 @@ function ContactForm() {
         
         const data = await response.json()
         setTrucks(data.trucks || [])
+
+        // If a truck ID is provided in the URL, preselect it
+        if (truckIdFromUrl) {
+          setFormData(prev => ({
+            ...prev,
+            truckId: truckIdFromUrl,
+            inquiryType: 'SALES' // Auto-select sales inquiry type
+          }))
+        }
       } catch (err) {
         console.error('Error fetching trucks:', err)
         setTrucksError('Failed to load available trucks')
@@ -141,7 +155,7 @@ function ContactForm() {
     }
 
     fetchTrucks()
-  }, [])
+  }, [truckIdFromUrl])
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { id, value } = e.target
@@ -263,7 +277,10 @@ function ContactForm() {
 
       <div className="space-y-2">
         <Label htmlFor="inquiryType">Inquiry Type</Label>
-        <Select onValueChange={(value) => handleSelectChange("inquiryType", value)}>
+        <Select 
+          value={formData.inquiryType} 
+          onValueChange={(value) => handleSelectChange("inquiryType", value)}
+        >
           <SelectTrigger id="inquiryType">
             <SelectValue placeholder="Select inquiry type" />
           </SelectTrigger>
@@ -276,7 +293,10 @@ function ContactForm() {
 
       <div className="space-y-2">
         <Label htmlFor="truckId">Interested in a specific truck?</Label>
-        <Select onValueChange={(value) => handleSelectChange("truckId", value)}>
+        <Select 
+          value={formData.truckId} 
+          onValueChange={(value) => handleSelectChange("truckId", value)}
+        >
           <SelectTrigger id="truckId">
             <SelectValue placeholder={isLoadingTrucks ? "Loading available trucks..." : "Select a truck (optional)"} />
           </SelectTrigger>

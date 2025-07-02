@@ -1,7 +1,18 @@
+"use client"
+
 import Link from "next/link"
+import { usePathname } from "next/navigation"
 import { Truck, Facebook, Instagram, Twitter, Mail, Phone, MapPin } from "lucide-react"
 
 export function SiteFooter() {
+  const pathname = usePathname()
+  const isAdminLoginPage = pathname === '/admin'
+  
+  // Hide footer on admin login page
+  if (isAdminLoginPage) {
+    return null
+  }
+
   return (
     <footer className="bg-gray-900 text-gray-200">
       <div className="container mx-auto px-4 py-12">
@@ -14,20 +25,6 @@ export function SiteFooter() {
             <p className="mb-6">
               Your trusted source for medium and light duty work trucks. Family owned and operated since 2005.
             </p>
-            <div className="flex space-x-6 mt-auto">
-              <Link href="#" className="hover:text-blue-400 transition-colors">
-                <Facebook className="h-6 w-6" />
-                <span className="sr-only">Facebook</span>
-              </Link>
-              <Link href="#" className="hover:text-blue-400 transition-colors">
-                <Instagram className="h-6 w-6" />
-                <span className="sr-only">Instagram</span>
-              </Link>
-              <Link href="#" className="hover:text-blue-400 transition-colors">
-                <Twitter className="h-6 w-6" />
-                <span className="sr-only">Twitter</span>
-              </Link>
-            </div>
           </div>
 
           <div className="flex flex-col items-center md:justify-self-center text-center">

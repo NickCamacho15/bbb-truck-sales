@@ -92,13 +92,13 @@ export default function AnalyticsPage() {
       
       <main className="flex-1 p-6">
         <Tabs defaultValue="week" value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <div className="flex items-center justify-between">
-            <h2 className="text-3xl font-bold tracking-tight">Truck Analytics</h2>
-            <TabsList>
-              <TabsTrigger value="day">Today</TabsTrigger>
-              <TabsTrigger value="week">This Week</TabsTrigger>
-              <TabsTrigger value="month">This Month</TabsTrigger>
-              <TabsTrigger value="all">All Time</TabsTrigger>
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">Truck Analytics</h2>
+            <TabsList className="w-full max-w-[320px] sm:w-auto">
+              <TabsTrigger value="day" className="text-xs sm:text-sm">Today</TabsTrigger>
+              <TabsTrigger value="week" className="text-xs sm:text-sm">This Week</TabsTrigger>
+              <TabsTrigger value="month" className="text-xs sm:text-sm">This Month</TabsTrigger>
+              <TabsTrigger value="all" className="text-xs sm:text-sm">All Time</TabsTrigger>
             </TabsList>
           </div>
           

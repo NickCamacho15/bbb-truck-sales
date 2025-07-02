@@ -57,15 +57,18 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     const isAdmin = referer.includes('/admin/')
     if (!isAdmin) {
       // Get client IP address
-      const ip = request.headers.get('x-forwarded-for') || request.ip || '127.0.0.1'
-      const ipHash = hashIp(ip.split(',')[0])
+      const forwardedFor = request.headers.get('x-forwarded-for') || '127.0.0.1'
+      const clientIp = forwardedFor.split(',')[0]
+      const ipHash = hashIp(clientIp)
       
       // Get or create session ID from cookies
       const sessionId = request.cookies.get('session_id')?.value
       
       // Check if this view has already been counted recently (within 30 minutes)
       const thirtyMinutesAgo = new Date(Date.now() - 30 * 60 * 1000)
-      const recentView = await prisma.truckView.findFirst({
+      
+      // Use type assertion to access truckView
+      const recentView = await (prisma as any).truckView.findFirst({
         where: {
           truckId: id,
           timestamp: {
@@ -84,7 +87,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       
       // Only log the view if there's no recent view from this session/IP
       if (!recentView) {
-        await prisma.truckView.create({
+        await (prisma as any).truckView.create({
           data: {
             truckId: id,
             ipHash,
@@ -114,6 +117,11 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     const data = updateTruckSchema.parse(body)
 
     const { images, features, ...truckData } = data
+
+    // If status is being set to SOLD, automatically set featured to false
+    if (truckData.status === "SOLD") {
+      truckData.featured = false
+    }
 
     // Start a transaction to update truck and related data
     const truck = await prisma.$transaction(async (tx) => {
@@ -199,6 +207,11 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
 
     // Extract images and features like in PUT handler
     const { images, features, ...truckData } = data
+
+    // If status is being set to SOLD, automatically set featured to false
+    if (truckData.status === "SOLD") {
+      truckData.featured = false
+    }
 
     // Update truck with simple fields only
     const updatedTruck = await prisma.truck.update({
