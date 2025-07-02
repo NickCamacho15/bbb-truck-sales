@@ -17,6 +17,22 @@ const Card = React.forwardRef<
 ))
 Card.displayName = "Card"
 
+// Clickable version of Card with hover effects
+const CardClickable = React.forwardRef<
+  HTMLDivElement,
+  React.HTMLAttributes<HTMLDivElement>
+>(({ className, ...props }, ref) => (
+  <div
+    ref={ref}
+    className={cn(
+      "rounded-lg border bg-card text-card-foreground shadow-sm cursor-pointer transition-all duration-200 hover:scale-[1.01] hover:shadow-md active:scale-[0.99]",
+      className
+    )}
+    {...props}
+  />
+))
+CardClickable.displayName = "CardClickable"
+
 const CardHeader = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement>
@@ -76,4 +92,4 @@ const CardFooter = React.forwardRef<
 ))
 CardFooter.displayName = "CardFooter"
 
-export { Card, CardHeader, CardFooter, CardTitle, CardDescription, CardContent }
+export { Card, CardClickable, CardHeader, CardFooter, CardTitle, CardDescription, CardContent }

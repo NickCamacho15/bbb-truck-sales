@@ -36,6 +36,7 @@ import {
   Settings,
   LogOut
 } from "lucide-react"
+import { clickable } from "@/lib/utils"
 
 export function SiteHeader() {
   const [isOpen, setIsOpen] = useState(false)

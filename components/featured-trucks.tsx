@@ -8,6 +8,7 @@ import { Card, CardContent, CardFooter } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Truck, DollarSign, Calendar, Fuel, Loader2 } from "lucide-react"
+import { clickable } from "@/lib/utils"
 
 interface TruckImage {
   id: string
@@ -104,7 +105,7 @@ export default function FeaturedTrucks() {
         <div 
           key={truck.id}
           onClick={() => router.push(`/inventory/${truck.id}`)}
-          className="cursor-pointer"
+          className={clickable()}
         >
           <Card className="overflow-hidden h-full transition-transform hover:scale-[1.01] hover:shadow-md">
             <div className="relative h-48 md:h-60">

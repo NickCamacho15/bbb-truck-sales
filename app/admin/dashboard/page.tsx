@@ -7,6 +7,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { AdminHeader } from "@/components/admin-header"
 import { BarChart3, DollarSign, Loader2, TrendingUp, Truck, Users, Eye } from "lucide-react"
 import React from "react"
+import { clickable } from "@/lib/utils"
+import { CardClickable } from "@/components/ui/card"
 
 interface ActivityItem {
   id: string

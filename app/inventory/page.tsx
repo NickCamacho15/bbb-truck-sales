@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Truck, DollarSign, Calendar, Fuel, Search, SlidersHorizontal, Loader2 } from "lucide-react"
+import { clickable } from "@/lib/utils"
 
 interface TruckImage {
   id: string
@@ -286,7 +287,7 @@ export default function InventoryPage() {
             <div
               key={truck.id}
               onClick={() => router.push(`/inventory/${truck.id}`)}
-              className="cursor-pointer"
+              className={clickable()}
             >
               <Card className="overflow-hidden h-full transition-transform hover:scale-[1.01] hover:shadow-md">
                 <div className="relative h-48 md:h-60">

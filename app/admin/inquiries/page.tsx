@@ -16,6 +16,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Calendar, Eye, Filter, Loader2, Mail, MoreHorizontal, Search, Trash2 } from "lucide-react"
+import { clickable } from "@/lib/utils"
 
 interface Inquiry {
   id: string
@@ -297,7 +298,7 @@ export default function AdminInquiriesPage() {
               filteredInquiries.map((inquiry) => (
                 <Card 
                   key={inquiry.id} 
-                  className="overflow-hidden cursor-pointer transition-transform hover:scale-[1.01] hover:shadow-md"
+                  className={clickable("overflow-hidden cursor-pointer transition-transform hover:scale-[1.01] hover:shadow-md")}
                   onClick={() => handleCardClick(inquiry.id)}
                 >
                   <CardHeader className="pb-2">
@@ -403,7 +404,7 @@ export default function AdminInquiriesPage() {
                     filteredInquiries.map((inquiry) => (
                       <tr 
                         key={inquiry.id} 
-                        className="cursor-pointer hover:bg-muted transition-colors"
+                        className={clickable("hover:bg-muted transition-colors")}
                         onClick={() => handleCardClick(inquiry.id)}
                       >
                         <td className="px-6 py-4 whitespace-nowrap">
