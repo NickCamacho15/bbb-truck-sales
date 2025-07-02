@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { AdminHeader } from "@/components/admin-header"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
@@ -46,6 +47,7 @@ export default function AdminInquiriesPage() {
   const [currentPage, setCurrentPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
   const [deletingId, setDeletingId] = useState<string | null>(null)
+  const router = useRouter()
 
   // Fetch inquiries from API
   useEffect(() => {
@@ -174,6 +176,11 @@ export default function AdminInquiriesPage() {
     }
   }
 
+  // For mobile view
+  const handleCardClick = (inquiryId: string) => {
+    router.push(`/admin/inquiries/${inquiryId}`)
+  }
+
   if (loading && inquiries.length === 0) {
     return (
       <div className="min-h-screen w-full">
@@ -288,7 +295,11 @@ export default function AdminInquiriesPage() {
               </div>
             ) : (
               filteredInquiries.map((inquiry) => (
-                <Card key={inquiry.id} className="overflow-hidden">
+                <Card 
+                  key={inquiry.id} 
+                  className="overflow-hidden cursor-pointer transition-transform hover:scale-[1.01] hover:shadow-md"
+                  onClick={() => handleCardClick(inquiry.id)}
+                >
                   <CardHeader className="pb-2">
                     <div className="flex justify-between items-start">
                       <CardTitle className="text-lg">{inquiry.name}</CardTitle>
@@ -321,17 +332,14 @@ export default function AdminInquiriesPage() {
                     </div>
                   </CardContent>
                   <CardFooter className="flex justify-end gap-2 pt-2">
-                    <Link href={`/admin/inquiries/${inquiry.id}`}>
-                      <Button variant="outline" size="sm" className="text-blue-500 hover:text-blue-600">
-                        <Eye className="h-4 w-4 mr-1" />
-                        View
-                      </Button>
-                    </Link>
                     <Button 
                       variant="outline" 
                       size="sm"
                       className="text-red-500 hover:text-red-600"
-                      onClick={() => deleteInquiry(inquiry.id)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        deleteInquiry(inquiry.id);
+                      }}
                       disabled={deletingId === inquiry.id}
                     >
                       {deletingId === inquiry.id ? 
@@ -393,7 +401,11 @@ export default function AdminInquiriesPage() {
                     </tr>
                   ) : (
                     filteredInquiries.map((inquiry) => (
-                      <tr key={inquiry.id}>
+                      <tr 
+                        key={inquiry.id} 
+                        className="cursor-pointer hover:bg-muted transition-colors"
+                        onClick={() => handleCardClick(inquiry.id)}
+                      >
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="text-sm font-medium">{inquiry.name}</div>
                         </td>
@@ -424,17 +436,14 @@ export default function AdminInquiriesPage() {
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
                           <div className="flex justify-center gap-2">
-                            <Link href={`/admin/inquiries/${inquiry.id}`}>
-                              <Button variant="ghost" size="sm" className="h-8 w-8 p-0" title="View inquiry details">
-                                <Eye className="h-4 w-4" />
-                                <span className="sr-only">View</span>
-                              </Button>
-                            </Link>
                             <Button 
                               variant="ghost" 
                               size="sm" 
                               className="h-8 w-8 p-0 text-destructive" 
-                              onClick={() => deleteInquiry(inquiry.id)}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                deleteInquiry(inquiry.id);
+                              }}
                               disabled={deletingId === inquiry.id}
                               title="Delete inquiry"
                             >

@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react"
 import Link from "next/link"
 import Image from "next/image"
+import { useRouter } from "next/navigation"
 import { Card, CardContent, CardFooter } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -55,6 +56,7 @@ export default function InventoryPage() {
   const [yearFilter, setYearFilter] = useState("all")
   const [priceFilter, setPriceFilter] = useState("any")
   const [sortBy, setSortBy] = useState("newest")
+  const router = useRouter()
   
   // Fetch trucks from API
   useEffect(() => {
@@ -281,58 +283,64 @@ export default function InventoryPage() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredTrucks.map((truck) => (
-            <Card key={truck.id} className="overflow-hidden">
-              <div className="relative h-48 md:h-60">
-                <Image 
-                  src={truck.images.length > 0 ? truck.images[0].imageUrl : "/placeholder.svg"} 
-                  alt={truck.title} 
-                  fill 
-                  className="object-cover"
-                  onError={(e) => {
-                    const target = e.target as HTMLImageElement
-                    target.src = '/placeholder.svg'
-                  }}
-                />
-                {truck.featured && <Badge className="absolute top-2 right-2 bg-blue-600">Featured</Badge>}
-              </div>
-              <CardContent className="p-4">
-                <h3 className="text-xl font-semibold mb-2">{truck.title}</h3>
-                <div className="flex justify-between mb-4">
-                  <div className="flex items-center">
-                    <DollarSign className="h-4 w-4 text-gray-500 mr-1" />
-                    <span className="font-bold text-lg">${truck.price.toLocaleString()}</span>
-                  </div>
-                  <div className="flex items-center">
-                    <Truck className="h-4 w-4 text-gray-500 mr-1" />
-                    <span>{truck.mileage.toLocaleString()} mi</span>
-                  </div>
+            <div
+              key={truck.id}
+              onClick={() => router.push(`/inventory/${truck.id}`)}
+              className="cursor-pointer"
+            >
+              <Card className="overflow-hidden h-full transition-transform hover:scale-[1.01] hover:shadow-md">
+                <div className="relative h-48 md:h-60">
+                  <Image 
+                    src={truck.images.length > 0 ? truck.images[0].imageUrl : "/placeholder.svg"} 
+                    alt={truck.title} 
+                    fill 
+                    className="object-cover"
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement
+                      target.src = '/placeholder.svg'
+                    }}
+                  />
+                  {truck.featured && <Badge className="absolute top-2 right-2 bg-blue-600">Featured</Badge>}
                 </div>
-                <div className="grid grid-cols-2 gap-2 text-sm text-gray-600">
-                  <div className="flex items-center">
-                    <Calendar className="h-4 w-4 mr-1" />
-                    <span>{truck.year}</span>
+                <CardContent className="p-4">
+                  <h3 className="text-xl font-semibold mb-2">{truck.title}</h3>
+                  <div className="flex justify-between mb-4">
+                    <div className="flex items-center">
+                      <DollarSign className="h-4 w-4 text-gray-500 mr-1" />
+                      <span className="font-bold text-lg">${truck.price.toLocaleString()}</span>
+                    </div>
+                    <div className="flex items-center">
+                      <Truck className="h-4 w-4 text-gray-500 mr-1" />
+                      <span>{truck.mileage.toLocaleString()} mi</span>
+                    </div>
                   </div>
-                  <div className="flex items-center">
-                    <Fuel className="h-4 w-4 mr-1" />
-                    <span>{truck.fuelType}</span>
+                  <div className="grid grid-cols-2 gap-2 text-sm text-gray-600">
+                    <div className="flex items-center">
+                      <Calendar className="h-4 w-4 mr-1" />
+                      <span>{truck.year}</span>
+                    </div>
+                    <div className="flex items-center">
+                      <Fuel className="h-4 w-4 mr-1" />
+                      <span>{truck.fuelType}</span>
+                    </div>
+                    <div>
+                      <span className="font-medium">Color:</span> {truck.color}
+                    </div>
+                    <div>
+                      <span className="font-medium">Trim:</span> {truck.trim}
+                    </div>
                   </div>
-                  <div>
-                    <span className="font-medium">Color:</span> {truck.color}
-                  </div>
-                  <div>
-                    <span className="font-medium">Trim:</span> {truck.trim}
-                  </div>
-                </div>
-              </CardContent>
-              <CardFooter className="p-4 pt-0 flex justify-between">
-                <Link href={`/inventory/${truck.id}`}>
+                </CardContent>
+                <CardFooter className="p-4 pt-0 flex justify-between">
                   <Button variant="outline">View Details</Button>
-                </Link>
-                <Link href={`/contact?truck=${truck.id}`}>
-                  <Button>Inquire Now</Button>
-                </Link>
-              </CardFooter>
-            </Card>
+                  <div onClick={(e) => e.stopPropagation()}>
+                    <Link href={`/contact?truck=${truck.id}`}>
+                      <Button>Inquire Now</Button>
+                    </Link>
+                  </div>
+                </CardFooter>
+              </Card>
+            </div>
           ))}
         </div>
       )}
