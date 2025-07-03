@@ -59,18 +59,18 @@ export function SiteFooter() {
               <li className="flex items-start gap-3 md:flex-row-reverse">
                 <MapPin className="h-5 w-5 mt-0.5 flex-shrink-0" />
                 <span>
-                  123 Truck Lane
+                  250 Gordon Ln
                   <br />
-                  Dallas, TX 75001
+                  Morehead, KY 40351
                 </span>
               </li>
               <li className="flex items-center gap-3 md:flex-row-reverse">
                 <Phone className="h-5 w-5 flex-shrink-0" />
-                <span>(555) 123-4567</span>
+                <span>606-776-3999</span>
               </li>
               <li className="flex items-center gap-3 md:flex-row-reverse">
                 <Mail className="h-5 w-5 flex-shrink-0" />
-                <span>info@bbbtrucksales.com</span>
+                <span>parts@superdutyfordtruckparts.com</span>
               </li>
             </ul>
           </div>

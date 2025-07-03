@@ -30,45 +30,38 @@ export default function ContactPage() {
         {/* Contact Information */}
         <Card className="h-full">
           <CardHeader>
-            <CardTitle>Contact Information</CardTitle>
+            <CardTitle className="text-2xl">Contact Information</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-6">
-            <div className="flex items-start gap-3">
-              <MapPin className="h-5 w-5 text-blue-600 mt-0.5 flex-shrink-0" />
+          <CardContent className="space-y-8">
+            <div className="flex items-start gap-4">
+              <MapPin className="h-6 w-6 text-blue-600 mt-1 flex-shrink-0" />
               <div>
-                <p className="font-medium">Triple B Truck Sales</p>
-                <p>123 Truck Lane</p>
-                <p>Dallas, TX 75001</p>
+                <p className="font-medium text-xl mb-1">Triple B Truck Sales</p>
+                <p className="text-lg">250 Gordon Ln</p>
+                <p className="text-lg">Morehead, KY 40351</p>
               </div>
             </div>
-            <div className="flex items-center gap-3">
-              <Phone className="h-5 w-5 text-blue-600 flex-shrink-0" />
+            <div className="flex items-center gap-4">
+              <Phone className="h-6 w-6 text-blue-600 flex-shrink-0" />
               <div>
-                <p className="font-medium">Sales Department</p>
-                <p>(555) 123-4567</p>
+                <p className="font-medium text-xl mb-1">Phone</p>
+                <p className="text-lg">606-776-3999</p>
               </div>
             </div>
-            <div className="flex items-center gap-3">
-              <Phone className="h-5 w-5 text-blue-600 flex-shrink-0" />
+            <div className="flex items-center gap-4">
+              <Mail className="h-6 w-6 text-blue-600 flex-shrink-0" />
               <div>
-                <p className="font-medium">Service Department</p>
-                <p>(555) 123-4568</p>
+                <p className="font-medium text-xl mb-1">Email</p>
+                <p className="text-lg">parts@superdutyfordtruckparts.com</p>
               </div>
             </div>
-            <div className="flex items-center gap-3">
-              <Mail className="h-5 w-5 text-blue-600 flex-shrink-0" />
+            <div className="flex items-start gap-4">
+              <Clock className="h-6 w-6 text-blue-600 mt-1 flex-shrink-0" />
               <div>
-                <p className="font-medium">Email</p>
-                <p>info@bbbtrucksales.com</p>
-              </div>
-            </div>
-            <div className="flex items-start gap-3">
-              <Clock className="h-5 w-5 text-blue-600 mt-0.5 flex-shrink-0" />
-              <div>
-                <p className="font-medium">Business Hours</p>
-                <p>Monday - Friday: 9:00 AM - 7:00 PM</p>
-                <p>Saturday: 10:00 AM - 5:00 PM</p>
-                <p>Sunday: Closed</p>
+                <p className="font-medium text-xl mb-2">Business Hours</p>
+                <p className="text-lg mb-1">Monday - Friday: 8am - 5pm</p>
+                <p className="text-lg mb-1">Saturday: 9am - 3pm or By appointment</p>
+                <p className="text-lg">Sunday: Closed or By appointment only</p>
               </div>
             </div>
           </CardContent>
