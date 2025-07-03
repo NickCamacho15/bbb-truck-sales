@@ -274,7 +274,7 @@ export default function TruckDetailPage({ params }: { params: Promise<{ id: stri
             <h1 className="text-2xl font-bold mb-2">{truck.title}</h1>
             <div className="flex items-center mb-4">
               <DollarSign className="h-6 w-6 text-green-600 mr-1" />
-              <span className="text-3xl font-bold text-green-600">${truck.price.toLocaleString()}</span>
+              <span className="text-3xl font-bold text-green-600">{truck.price.toLocaleString()}</span>
             </div>
 
             {/* Status Badge */}
