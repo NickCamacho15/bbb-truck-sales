@@ -89,7 +89,7 @@ export function SiteHeader() {
           <Link href={isAdminPage ? "/admin/dashboard" : "/"} className="flex items-center gap-2 mr-6">
             <Truck className="h-6 w-6" />
             <span className="font-bold text-xl hidden sm:inline-block">
-              {isAdminPage ? "Triple B Admin" : "Triple B Truck Sales"}
+              {isAdminPage ? "Triple B Admin" : "Triple B Truck Leasing"}
             </span>
             <span className="font-bold text-xl sm:hidden">BBB</span>
           </Link>

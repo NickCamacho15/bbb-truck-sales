@@ -60,6 +60,8 @@ export async function GET(request: NextRequest) {
         make: true,
         model: true,
         price: true,
+        listingType: true,
+        monthlyPrice: true,
         updatedAt: true
       },
       orderBy: {
@@ -119,8 +121,9 @@ export async function GET(request: NextRequest) {
         year: truck.year,
         make: truck.make,
         model: truck.model,
-        price: truck.price,
-        soldDate: truck.updatedAt
+        price: truck.listingType === "LEASE" ? (truck.monthlyPrice || truck.price) : truck.price,
+        soldDate: truck.updatedAt,
+        listingType: truck.listingType
       })),
       viewsByDay
     })

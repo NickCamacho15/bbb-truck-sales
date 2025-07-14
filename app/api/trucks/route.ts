@@ -5,7 +5,11 @@ import { z } from "zod"
 
 const createTruckSchema = z.object({
   title: z.string().min(1, "Title is required"),
-  price: z.number().positive("Price must be positive"),
+  listingType: z.enum(["SALE", "LEASE"]).default("SALE"),
+  price: z.number().nonnegative("Price cannot be negative"),
+  monthlyPrice: z.number().positive("Monthly price must be positive").optional().nullable(),
+  leaseTermMonths: z.number().positive("Lease term must be positive").optional().nullable(),
+  downPayment: z.number().nonnegative("Down payment must be non-negative").optional().nullable(),
   year: z
     .number()
     .min(1900)
@@ -25,7 +29,18 @@ const createTruckSchema = z.object({
   featured: z.boolean().optional(),
   images: z.array(z.string()).optional(),
   features: z.array(z.string()).optional(),
-})
+}).refine((data) => {
+  // For SALE listings, price must be positive
+  // For LEASE listings, price can be zero but monthlyPrice must be provided
+  if (data.listingType === "SALE") {
+    return data.price > 0;
+  } else {
+    return data.monthlyPrice !== undefined && data.monthlyPrice !== null && data.monthlyPrice > 0;
+  }
+}, {
+  message: "Sale listings require a positive price. Lease listings require a positive monthly price.",
+  path: ["price"], // This will show the error on the price field
+});
 
 // GET /api/trucks - List all trucks with optional filtering
 export async function GET(request: NextRequest) {
@@ -37,6 +52,7 @@ export async function GET(request: NextRequest) {
     const model = searchParams.get("model")
     const search = searchParams.get("search")
     const featured = searchParams.get("featured")
+    const listingType = searchParams.get("listingType")
 
     const where: any = {}
 
@@ -48,6 +64,10 @@ export async function GET(request: NextRequest) {
 
     if (model && model !== "all") {
       where.model = model
+    }
+
+    if (listingType && listingType !== "all") {
+      where.listingType = listingType
     }
 
     if (search) {

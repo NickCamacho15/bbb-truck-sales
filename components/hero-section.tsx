@@ -12,8 +12,8 @@ export function HeroSection() {
   const slides = [
     {
       image: "/truck-image.jpeg",
-      title: "Triple B Truck Sales",
-      subtitle: "Your Trusted Source for Medium & Light Duty Work Trucks",
+      title: "Triple B Truck Leasing",
+      subtitle: "Your Trusted Source for Medium & Light Duty Work Truck Leasing",
       cta: "Browse Inventory",
       link: "/inventory",
     },

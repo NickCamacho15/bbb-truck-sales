@@ -36,6 +36,9 @@ interface Truck {
   id: string
   title: string
   price: number
+  listingType: "SALE" | "LEASE"
+  monthlyPrice?: number | null
+  leaseTermMonths?: number | null
   year: number
   make: string
   model: string
@@ -63,6 +66,7 @@ export default function AdminInventoryPage() {
   const [searchQuery, setSearchQuery] = useState("")
   const [statusFilter, setStatusFilter] = useState("all")
   const [modelFilter, setModelFilter] = useState("all")
+  const [listingTypeFilter, setListingTypeFilter] = useState("all")
 
   // Fetch trucks from API
   useEffect(() => {
@@ -163,6 +167,34 @@ export default function AdminInventoryPage() {
     }
   }
 
+  const handleMarkAsLeased = async (truckId: string) => {
+    if (!confirm('Are you sure you want to mark this truck as leased?')) {
+      return
+    }
+
+    try {
+      const response = await fetch(`/api/trucks/${truckId}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          status: "SOLD", // We use the same SOLD status for leased trucks
+        }),
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to update truck status')
+      }
+
+      // Refresh the trucks list
+      await fetchTrucks()
+    } catch (err) {
+      console.error('Error updating truck status:', err)
+      alert('Failed to mark truck as leased. Please try again.')
+    }
+  }
+
   // First filter out any trucks with SOLD status
   const activeTrucks = trucks.filter(truck => truck.status !== "SOLD")
   
@@ -176,8 +208,12 @@ export default function AdminInventoryPage() {
                          (statusFilter === "Pending Sale" && truck.status === "PENDING_SALE")
     
     const matchesModel = modelFilter === "all" || truck.model === modelFilter
+    
+    const matchesListingType = listingTypeFilter === "all" || 
+                              (listingTypeFilter === "Sale" && truck.listingType === "SALE") ||
+                              (listingTypeFilter === "Lease" && truck.listingType === "LEASE")
 
-    return matchesSearch && matchesStatus && matchesModel
+    return matchesSearch && matchesStatus && matchesModel && matchesListingType
   })
 
   const formatStatus = (status: string) => {
@@ -253,154 +289,210 @@ export default function AdminInventoryPage() {
             </Link>
           </div>
 
-          <Card className="mb-6">
-            <CardContent className="p-4">
-              <div className="flex flex-col md:flex-row gap-4">
-                <div className="flex-1">
-                  <div className="relative">
-                    <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                    <Input
-                      type="search"
-                      placeholder="Search trucks..."
-                      className="pl-8 w-full"
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                    />
-                  </div>
+          <div className="bg-card rounded-lg border shadow-sm">
+            <div className="p-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                {/* Search input */}
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Search trucks..."
+                    className="pl-9"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                  />
+                </div>
+                
+                {/* Filter by status */}
+                <div>
+                  <Select value={statusFilter} onValueChange={setStatusFilter}>
+                    <SelectTrigger className="w-full">
+                      <div className="flex items-center">
+                        <Filter className="mr-2 h-4 w-4" />
+                        <span>Status: {statusFilter === "all" ? "All" : statusFilter}</span>
+                      </div>
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Status</SelectItem>
+                      <SelectItem value="Available">Available</SelectItem>
+                      <SelectItem value="Pending Sale">Pending Sale</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
 
-                <div className="flex flex-col sm:flex-row gap-4">
-                  <div className="flex items-center gap-2">
-                    <Filter className="h-4 w-4 text-muted-foreground" />
-                    <Select value={statusFilter} onValueChange={setStatusFilter}>
-                      <SelectTrigger className="w-[180px]">
-                        <SelectValue placeholder="Filter by status" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">All Statuses</SelectItem>
-                        <SelectItem value="Available">Available</SelectItem>
-                        <SelectItem value="Pending Sale">Pending Sale</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div className="flex items-center gap-2">
-                    <Truck className="h-4 w-4 text-muted-foreground" />
-                    <Select value={modelFilter} onValueChange={setModelFilter}>
-                      <SelectTrigger className="w-[180px]">
-                        <SelectValue placeholder="Filter by model" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">All Models</SelectItem>
-                        <SelectItem value="F-150">F-150</SelectItem>
-                        <SelectItem value="F-250">F-250</SelectItem>
-                        <SelectItem value="F-350">F-350</SelectItem>
-                        <SelectItem value="Ranger">Ranger</SelectItem>
-                        <SelectItem value="Maverick">Maverick</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
+                {/* Filter by listing type */}
+                <div>
+                  <Select value={listingTypeFilter} onValueChange={setListingTypeFilter}>
+                    <SelectTrigger className="w-full">
+                      <div className="flex items-center">
+                        <Filter className="mr-2 h-4 w-4" />
+                        <span>Listing Type: {listingTypeFilter === "all" ? "All" : listingTypeFilter}</span>
+                      </div>
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Types</SelectItem>
+                      <SelectItem value="Sale">For Sale</SelectItem>
+                      <SelectItem value="Lease">For Lease</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                {/* Filter by model */}
+                <div>
+                  <Select value={modelFilter} onValueChange={setModelFilter}>
+                    <SelectTrigger className="w-full">
+                      <div className="flex items-center">
+                        <Filter className="mr-2 h-4 w-4" />
+                        <span>Model: {modelFilter === "all" ? "All" : modelFilter}</span>
+                      </div>
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Models</SelectItem>
+                      {Array.from(new Set(trucks.map((truck) => truck.model))).sort().map((model) => (
+                        <SelectItem key={model} value={model}>
+                          {model}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
-            </CardContent>
-          </Card>
-
-          {filteredTrucks.length === 0 ? (
-            <Card>
-              <CardContent className="p-8 text-center">
-                <Truck className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                <h3 className="text-lg font-semibold mb-2">No trucks found</h3>
-                <p className="text-muted-foreground mb-4">
-                  {trucks.length === 0 
-                    ? "Get started by adding your first truck to the inventory."
-                    : "Try adjusting your search or filter criteria."
-                  }
-                </p>
-                {trucks.length === 0 && (
-                  <Link href="/admin/inventory/new">
-                    <Button>
-                      <Plus className="mr-2 h-4 w-4" />
-                      Add First Truck
-                    </Button>
-                  </Link>
-                )}
-              </CardContent>
-            </Card>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredTrucks.map((truck) => {
-                const primaryImage = truck.images.find(img => img.isPrimary) || truck.images[0]
-                const imageUrl = primaryImage?.imageUrl || "/placeholder.svg"
-                
-                return (
-                  <Card key={truck.id} className="overflow-hidden">
-                    <div className="relative h-48">
-                       <Image 
-                         src={imageUrl} 
-                         alt={truck.title} 
-                         fill 
-                         className="object-cover"
-                         onError={(e) => {
-                           const target = e.target as HTMLImageElement
-                           target.src = "/placeholder.svg"
-                         }}
-                       />
-                      <div className={`absolute top-2 left-2 px-2 py-1 text-xs font-medium rounded ${getStatusColor(truck.status)}`}>
-                        {formatStatus(truck.status)}
-                      </div>
-                      {truck.featured && (
-                        <div className="absolute bottom-2 left-2 px-2 py-1 text-xs font-medium rounded bg-yellow-400 text-yellow-900">
-                          Featured
-                        </div>
-                      )}
-                    </div>
-                    <CardContent className="p-4">
-                      <h3 className="text-lg font-semibold mb-2">{truck.title}</h3>
-                      <div className="flex justify-between mb-4">
-                        <div className="flex items-center">
-                          <DollarSign className="h-4 w-4 text-gray-500 mr-1" />
-                          <span className="font-bold">${truck.price.toLocaleString()}</span>
-                        </div>
-                        <div className="flex items-center">
-                          <Calendar className="h-4 w-4 text-gray-500 mr-1" />
-                          <span>{truck.year}</span>
-                        </div>
-                      </div>
-                      <div className="text-sm text-muted-foreground mb-4">
-                        <p>{truck.mileage.toLocaleString()} miles • {truck.fuelType}</p>
-                        <p>Stock: {truck.stockNumber}</p>
-                      </div>
-                      <div className="flex flex-col gap-2">
-                        <div className="flex justify-between">
-                          <Link href={`/admin/inventory/${truck.id}/edit`}>
-                            <Button variant="outline" size="sm">
-                              <Edit className="mr-2 h-3 w-3" />
-                              Edit
-                            </Button>
-                          </Link>
-                          <Link href={`/inventory/${truck.id}?from=admin`}>
-                            <Button variant="outline" size="sm">
-                              <Eye className="mr-2 h-3 w-3" />
-                              View
-                            </Button>
-                          </Link>
-                        </div>
-                        <Button 
-                          onClick={() => handleMarkAsSold(truck.id)} 
-                          variant="default" 
-                          size="sm" 
-                          className="w-full"
-                        >
-                          <CheckCircle2 className="mr-2 h-3 w-3" />
-                          Mark as Sold
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
-                )
-              })}
             </div>
-          )}
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 p-6">
+              {filteredTrucks.length === 0 ? (
+                <div className="col-span-full text-center py-8">
+                  <p className="text-muted-foreground">No trucks found matching your filters.</p>
+                  <Button variant="link" onClick={() => {
+                    setSearchQuery('')
+                    setStatusFilter('all')
+                    setModelFilter('all')
+                    setListingTypeFilter('all')
+                  }}>
+                    Reset Filters
+                  </Button>
+                </div>
+              ) : (
+                filteredTrucks.map((truck) => {
+                  const primaryImage = truck.images.find((img) => img.isPrimary) || truck.images[0]
+                  
+                  return (
+                    <Card key={truck.id} className="overflow-hidden">
+                      <div className="aspect-video relative bg-muted">
+                        {/* Badge for listing type */}
+                        <div className="absolute top-2 left-2 z-10">
+                          <div className={`px-2 py-1 rounded text-xs font-medium ${(truck.listingType || "SALE") === "SALE" ? "bg-blue-100 text-blue-800" : "bg-purple-100 text-purple-800"}`}>
+                            {(truck.listingType || "SALE") === "SALE" ? "For Sale" : "For Lease"}
+                          </div>
+                        </div>
+                        
+                        {/* Featured badge */}
+                        {truck.featured && (
+                          <div className="absolute top-2 right-2 z-10">
+                            <div className="px-2 py-1 rounded bg-amber-100 text-amber-800 text-xs font-medium">
+                              Featured
+                            </div>
+                          </div>
+                        )}
+                        
+                        {/* Status badge */}
+                        <div className="absolute bottom-2 left-2 z-10">
+                          <div className={`px-2 py-1 rounded text-xs font-medium ${getStatusColor(truck.status)}`}>
+                            {formatStatus(truck.status)}
+                          </div>
+                        </div>
+                        
+                        {primaryImage ? (
+                          <Image
+                            src={primaryImage.imageUrl}
+                            alt={truck.title}
+                            fill
+                            className="object-cover"
+                          />
+                        ) : (
+                          <div className="h-full w-full flex items-center justify-center">
+                            <Truck className="h-12 w-12 text-muted-foreground" />
+                          </div>
+                        )}
+                      </div>
+                      
+                      <CardContent className="p-4">
+                        <h3 className="font-semibold text-lg mb-2">{truck.title}</h3>
+                        <div className="grid grid-cols-2 gap-y-2 mb-4">
+                          {(truck.listingType || "SALE") === "SALE" ? (
+                            <div className="flex items-center">
+                              <DollarSign className="h-4 w-4 mr-1 text-muted-foreground" />
+                              <span className="font-medium">${truck.price.toLocaleString()}</span>
+                            </div>
+                          ) : (
+                            <div className="flex items-center">
+                              <DollarSign className="h-4 w-4 mr-1 text-muted-foreground" />
+                              <span className="font-medium">${truck.monthlyPrice?.toLocaleString() || truck.price.toLocaleString()}/mo</span>
+                            </div>
+                          )}
+                          <div className="flex items-center">
+                            <Calendar className="h-4 w-4 mr-1 text-muted-foreground" />
+                            <span>{truck.year}</span>
+                          </div>
+                          <div className="col-span-2">
+                            <span className="text-sm text-muted-foreground">
+                              {truck.mileage.toLocaleString()} miles • {truck.color} • Stock #{truck.stockNumber}
+                            </span>
+                          </div>
+                        </div>
+                        
+                        <div className="flex justify-between items-center">
+                          <div className="flex space-x-2">
+                            <Link href={`/admin/inventory/${truck.id}/edit`}>
+                              <Button size="sm" variant="outline" className="h-8 gap-1">
+                                <Edit className="h-3 w-3" />
+                                <span>Edit</span>
+                              </Button>
+                            </Link>
+                            
+                            <Link href={`/inventory/${truck.id}`} target="_blank">
+                              <Button size="sm" variant="outline" className="h-8 gap-1">
+                                <Eye className="h-3 w-3" />
+                                <span>View</span>
+                              </Button>
+                            </Link>
+                          </div>
+                          
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                                <MoreHorizontal className="h-4 w-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                              <DropdownMenuItem
+                                onClick={() => handleToggleFeatured(truck.id, truck.featured)}
+                              >
+                                {truck.featured ? "Remove from Featured" : "Mark as Featured"}
+                              </DropdownMenuItem>
+                              <DropdownMenuItem
+                                onClick={() => truck.listingType === "LEASE" ? handleMarkAsLeased(truck.id) : handleMarkAsSold(truck.id)}
+                              >
+                                {truck.listingType === "LEASE" ? "Mark as Leased" : "Mark as Sold"}
+                              </DropdownMenuItem>
+                              <DropdownMenuSeparator />
+                              <DropdownMenuItem
+                                className="text-red-600"
+                                onClick={() => handleDeleteTruck(truck.id)}
+                              >
+                                Delete Listing
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  )
+                })
+              )}
+            </div>
+          </div>
         </main>
       </div>
     </div>

@@ -6,7 +6,11 @@ import { createHash } from "crypto"
 
 const updateTruckSchema = z.object({
   title: z.string().min(1).optional(),
-  price: z.number().positive().optional(),
+  price: z.number().nonnegative().optional(),
+  listingType: z.enum(["SALE", "LEASE"]).optional(),
+  monthlyPrice: z.number().positive().optional().nullable(),
+  leaseTermMonths: z.number().positive().optional().nullable(),
+  downPayment: z.number().nonnegative().optional().nullable(),
   year: z
     .number()
     .min(1900)
@@ -27,7 +31,27 @@ const updateTruckSchema = z.object({
   featured: z.boolean().optional(),
   images: z.array(z.string()).optional(),
   features: z.array(z.string()).optional(),
-})
+}).refine((data) => {
+  // Skip validation if not updating price or listing type
+  if (data.price === undefined || data.listingType === undefined) {
+    return true;
+  }
+  
+  // For SALE listings, price must be positive
+  // For LEASE listings, price can be zero
+  if (data.listingType === "SALE") {
+    return data.price > 0;
+  } else {
+    // For LEASE, if updating monthly price, ensure it's positive
+    if (data.monthlyPrice !== undefined && data.monthlyPrice !== null) {
+      return data.monthlyPrice > 0;
+    }
+    return true;
+  }
+}, {
+  message: "Sale listings require a positive price. Lease listings require a positive monthly price.",
+  path: ["price"],
+});
 
 // Function to hash IP address to avoid storing PII
 function hashIp(ip: string): string {

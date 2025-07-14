@@ -26,6 +26,10 @@ interface TruckData {
   id: string
   title: string
   price: number
+  listingType: "SALE" | "LEASE"
+  monthlyPrice: number | null
+  leaseTermMonths: number | null
+  downPayment: number | null
   year: number
   make: string
   model: string
@@ -56,7 +60,7 @@ export default function FeaturedTrucks() {
         setLoading(true)
         setError(null)
         
-        const response = await fetch('/api/trucks?featured=true&limit=3')
+        const response = await fetch('/api/trucks?featured=true&listingType=LEASE&limit=3')
         if (!response.ok) {
           throw new Error('Failed to fetch featured trucks')
         }
@@ -124,9 +128,21 @@ export default function FeaturedTrucks() {
             <CardContent className="p-4">
               <h3 className="text-xl font-semibold mb-2">{truck.title}</h3>
               <div className="flex justify-between mb-4">
-                <div className="flex items-center">
-                  <DollarSign className="h-4 w-4 text-gray-500 mr-1" />
-                  <span className="font-bold text-lg">${truck.price.toLocaleString()}</span>
+                <div className="flex flex-col">
+                  <div className="flex items-center">
+                    <DollarSign className="h-4 w-4 text-gray-500 mr-1" />
+                    <span className="font-bold text-lg">${truck.monthlyPrice?.toLocaleString()}/mo</span>
+                  </div>
+                  {truck.downPayment && truck.downPayment > 0 && (
+                    <div className="text-sm text-gray-600">
+                      ${truck.downPayment.toLocaleString()} down
+                    </div>
+                  )}
+                  {truck.leaseTermMonths && truck.leaseTermMonths > 0 && (
+                    <div className="text-sm text-gray-600">
+                      {truck.leaseTermMonths} month term
+                    </div>
+                  )}
                 </div>
                 <div className="flex items-center">
                   <Truck className="h-4 w-4 text-gray-500 mr-1" />

@@ -28,6 +28,10 @@ interface TruckData {
   id: string
   title: string
   price: number
+  listingType: "SALE" | "LEASE"
+  monthlyPrice: number | null
+  leaseTermMonths: number | null
+  downPayment: number | null
   year: number
   make: string
   model: string
@@ -69,8 +73,8 @@ export default function InventoryPage() {
       setLoading(true)
       setError(null)
       
-      // Only get available trucks for public site
-      const response = await fetch('/api/trucks?status=AVAILABLE&limit=50')
+      // Only get available LEASE trucks for public site
+      const response = await fetch('/api/trucks?status=AVAILABLE&listingType=LEASE&limit=50')
       if (!response.ok) {
         throw new Error('Failed to fetch trucks')
       }
@@ -113,11 +117,11 @@ export default function InventoryPage() {
 
       // Price filter
       const matchesPrice = priceFilter === "any" ||
-        (priceFilter === "under-30k" && truck.price < 30000) ||
-        (priceFilter === "30k-40k" && truck.price >= 30000 && truck.price < 40000) ||
-        (priceFilter === "40k-50k" && truck.price >= 40000 && truck.price < 50000) ||
-        (priceFilter === "50k-60k" && truck.price >= 50000 && truck.price < 60000) ||
-        (priceFilter === "over-60k" && truck.price >= 60000);
+        (priceFilter === "under-300" && truck.monthlyPrice < 300) ||
+        (priceFilter === "300-500" && truck.monthlyPrice >= 300 && truck.monthlyPrice < 500) ||
+        (priceFilter === "500-700" && truck.monthlyPrice >= 500 && truck.monthlyPrice < 700) ||
+        (priceFilter === "700-1000" && truck.monthlyPrice >= 700 && truck.monthlyPrice < 1000) ||
+        (priceFilter === "over-1000" && truck.monthlyPrice >= 1000);
 
       return matchesSearch && matchesMileage && matchesYear && matchesPrice;
     }).sort((a, b) => {
@@ -128,9 +132,9 @@ export default function InventoryPage() {
         case "oldest":
           return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
         case "price-low":
-          return a.price - b.price;
+          return (a.monthlyPrice || 0) - (b.monthlyPrice || 0);
         case "price-high":
-          return b.price - a.price;
+          return (b.monthlyPrice || 0) - (a.monthlyPrice || 0);
         case "mileage-low":
           return a.mileage - b.mileage;
         default:
@@ -168,7 +172,7 @@ export default function InventoryPage() {
 
   return (
     <div className="container mx-auto py-8 px-4 md:px-6">
-      <h1 className="text-3xl font-bold mb-6">Our Truck Inventory</h1>
+      <h1 className="text-3xl font-bold mb-6">Our Trucks for Lease</h1>
 
       {/* Filters */}
       <div className="bg-muted rounded-lg p-4 mb-8">
@@ -231,7 +235,7 @@ export default function InventoryPage() {
           </div>
           <div>
             <label htmlFor="price" className="text-sm font-medium mb-1 block">
-              Price Range
+              Monthly Payment
             </label>
             <Select value={priceFilter} onValueChange={setPriceFilter}>
               <SelectTrigger id="price">
@@ -239,11 +243,11 @@ export default function InventoryPage() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="any">Any Price</SelectItem>
-                <SelectItem value="under-30k">Under $30,000</SelectItem>
-                <SelectItem value="30k-40k">$30,000 - $40,000</SelectItem>
-                <SelectItem value="40k-50k">$40,000 - $50,000</SelectItem>
-                <SelectItem value="50k-60k">$50,000 - $60,000</SelectItem>
-                <SelectItem value="over-60k">Over $60,000</SelectItem>
+                <SelectItem value="under-300">Under $300/mo</SelectItem>
+                <SelectItem value="300-500">$300 - $500/mo</SelectItem>
+                <SelectItem value="500-700">$500 - $700/mo</SelectItem>
+                <SelectItem value="700-1000">$700 - $1000/mo</SelectItem>
+                <SelectItem value="over-1000">Over $1000/mo</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -263,8 +267,8 @@ export default function InventoryPage() {
           <SelectContent>
             <SelectItem value="newest">Newest First</SelectItem>
             <SelectItem value="oldest">Oldest First</SelectItem>
-            <SelectItem value="price-low">Price: Low to High</SelectItem>
-            <SelectItem value="price-high">Price: High to Low</SelectItem>
+            <SelectItem value="price-low">Monthly Payment: Low to High</SelectItem>
+            <SelectItem value="price-high">Monthly Payment: High to Low</SelectItem>
             <SelectItem value="mileage-low">Mileage: Low to High</SelectItem>
           </SelectContent>
         </Select>
@@ -306,9 +310,21 @@ export default function InventoryPage() {
                 <CardContent className="p-4">
                   <h3 className="text-xl font-semibold mb-2">{truck.title}</h3>
                   <div className="flex justify-between mb-4">
-                    <div className="flex items-center">
-                      <DollarSign className="h-4 w-4 text-gray-500 mr-1" />
-                      <span className="font-bold text-lg">${truck.price.toLocaleString()}</span>
+                    <div className="flex flex-col">
+                      <div className="flex items-center">
+                        <DollarSign className="h-4 w-4 text-gray-500 mr-1" />
+                        <span className="font-bold text-lg">${truck.monthlyPrice?.toLocaleString()}/mo</span>
+                      </div>
+                      {truck.downPayment && truck.downPayment > 0 && (
+                        <div className="text-sm text-gray-600">
+                          ${truck.downPayment.toLocaleString()} down
+                        </div>
+                      )}
+                      {truck.leaseTermMonths && truck.leaseTermMonths > 0 && (
+                        <div className="text-sm text-gray-600">
+                          {truck.leaseTermMonths} month term
+                        </div>
+                      )}
                     </div>
                     <div className="flex items-center">
                       <Truck className="h-4 w-4 text-gray-500 mr-1" />

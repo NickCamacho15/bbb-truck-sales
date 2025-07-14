@@ -39,6 +39,10 @@ interface TruckData {
   id: string
   title: string
   price: number
+  listingType: "SALE" | "LEASE"
+  monthlyPrice: number | null
+  leaseTermMonths: number | null
+  downPayment: number | null
   year: number
   make: string
   model: string
@@ -239,6 +243,12 @@ export default function TruckDetailPage({ params }: { params: Promise<{ id: stri
                 {selectedImageIndex + 1} / {truckImages.length}
               </div>
             )}
+            {/* Lease badge */}
+            {truck.listingType === "LEASE" && (
+              <div className="absolute top-4 left-4 bg-green-600 text-white font-medium px-3 py-1 rounded-md">
+                For Lease
+              </div>
+            )}
           </div>
           {truckImages.length > 1 && (
             <div className="grid grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-2">
@@ -272,10 +282,31 @@ export default function TruckDetailPage({ params }: { params: Promise<{ id: stri
         <div className="order-2 lg:col-span-4">
           <div className="bg-card text-card-foreground p-6 border rounded-lg shadow-sm mb-1">
             <h1 className="text-2xl font-bold mb-2">{truck.title}</h1>
-            <div className="flex items-center mb-4">
-              <DollarSign className="h-6 w-6 text-green-600 mr-1" />
-              <span className="text-3xl font-bold text-green-600">{truck.price.toLocaleString()}</span>
-            </div>
+            
+            {/* Price information */}
+            {truck.listingType === "LEASE" ? (
+              <div className="mb-4">
+                <div className="flex items-center">
+                  <DollarSign className="h-6 w-6 text-green-600 mr-1" />
+                  <span className="text-3xl font-bold text-green-600">${truck.monthlyPrice?.toLocaleString()}/mo</span>
+                </div>
+                {truck.downPayment && truck.downPayment > 0 && (
+                  <div className="text-muted-foreground mt-1">
+                    ${truck.downPayment.toLocaleString()} down payment
+                  </div>
+                )}
+                {truck.leaseTermMonths && (
+                  <div className="text-muted-foreground text-sm">
+                    {truck.leaseTermMonths} month lease term
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="flex items-center mb-4">
+                <DollarSign className="h-6 w-6 text-green-600 mr-1" />
+                <span className="text-3xl font-bold text-green-600">${truck.price.toLocaleString()}</span>
+              </div>
+            )}
 
             {/* Status Badge */}
             <div className="mb-4">
@@ -289,7 +320,8 @@ export default function TruckDetailPage({ params }: { params: Promise<{ id: stri
                 }`}
               >
                 {truck.status === 'AVAILABLE' ? 'Available' : 
-                 truck.status === 'PENDING_SALE' ? 'Pending Sale' : 'Sold'}
+                 truck.status === 'PENDING_SALE' ? 'Pending Sale' : 
+                 (truck.status === 'SOLD' && truck.listingType === 'LEASE') ? 'Leased' : 'Sold'}
               </span>
             </div>
 
@@ -367,14 +399,17 @@ export default function TruckDetailPage({ params }: { params: Promise<{ id: stri
                 <>
                   <Link href={`/contact?truck=${truck.id}`} className="block w-full cursor-pointer">
                     <Button className="w-full text-lg py-6 transition-all duration-300 hover:scale-[1.02] hover:shadow-lg cursor-pointer">
-                      Contact About This Truck
+                      {truck.listingType === "LEASE" 
+                        ? "Inquire About Leasing This Truck" 
+                        : "Contact About This Truck"}
                     </Button>
                   </Link>
                 </>
               ) : (
                 <>
                   <Button disabled className="w-full text-lg py-6">
-                    {truck.status === 'PENDING_SALE' ? 'Sale Pending' : 'Sold'}
+                    {truck.status === 'PENDING_SALE' ? 'Sale Pending' : 
+                     (truck.status === 'SOLD' && truck.listingType === 'LEASE') ? 'Leased' : 'Sold'}
                   </Button>
                 </>
               )}

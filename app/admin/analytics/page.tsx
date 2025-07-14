@@ -14,7 +14,8 @@ import {
   Eye,
   Calendar,
   TrendingUp,
-  AlertCircle
+  AlertCircle,
+  Tag
 } from "lucide-react"
 
 interface ViewsData {
@@ -39,6 +40,7 @@ interface SoldTruckData {
   model: string
   price: number
   soldDate: string
+  listingType: "SALE" | "LEASE"
 }
 
 interface AnalyticsData {
@@ -168,14 +170,14 @@ export default function AnalyticsPage() {
                 
                 <Card>
                   <CardHeader className="flex flex-row items-center justify-between pb-2">
-                    <CardTitle className="text-sm font-medium">Trucks Sold</CardTitle>
+                    <CardTitle className="text-sm font-medium">Trucks Sold/Leased</CardTitle>
                     <LineChart className="h-4 w-4 text-muted-foreground" />
                   </CardHeader>
                   <CardContent>
                     <div className="text-2xl font-bold">
                       {analyticsData?.soldTrucks?.length || 0}
                     </div>
-                    <p className="text-xs text-muted-foreground">Total trucks sold</p>
+                    <p className="text-xs text-muted-foreground">Total trucks sold/leased</p>
                   </CardContent>
                 </Card>
               </div>
@@ -235,9 +237,9 @@ export default function AnalyticsPage() {
                 {/* Sold Trucks Table */}
                 <Card>
                   <CardHeader>
-                    <CardTitle>Recently Sold Trucks</CardTitle>
+                    <CardTitle>Recently Sold/Leased Trucks</CardTitle>
                     <CardDescription>
-                      Trucks with "Sold" status
+                      Trucks with "Sold" status (both sold and leased)
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
@@ -248,13 +250,20 @@ export default function AnalyticsPage() {
                             <p className="text-sm font-medium leading-none">
                               {truck.year} {truck.make} {truck.model}
                             </p>
-                            <p className="text-sm text-muted-foreground truncate max-w-[200px]">
-                              {truck.title}
-                            </p>
+                            <div className="flex items-center gap-1">
+                              <p className="text-sm text-muted-foreground truncate max-w-[200px]">
+                                {truck.title}
+                              </p>
+                              <span className={`text-xs px-1.5 py-0.5 rounded ${truck.listingType === "LEASE" ? "bg-purple-100 text-purple-800" : "bg-blue-100 text-blue-800"}`}>
+                                {truck.listingType === "LEASE" ? "Leased" : "Sold"}
+                              </span>
+                            </div>
                           </div>
                           <div className="flex items-center gap-2">
                             <div className="flex items-center">
-                              <span className="text-sm font-medium">${truck.price.toLocaleString()}</span>
+                              <span className="text-sm font-medium">
+                                {truck.price > 0 ? `$${truck.price.toLocaleString()}${truck.listingType === "LEASE" ? '/mo' : ''}` : "N/A"}
+                              </span>
                             </div>
                             <Link href={`/inventory/${truck.id}`} target="_blank">
                               <Button variant="ghost" size="sm" className="h-8 w-8 p-0">

@@ -20,10 +20,10 @@ export function SiteFooter() {
           <div className="flex flex-col items-start md:justify-self-start">
             <Link href="/" className="flex items-center gap-2 mb-4">
               <Truck className="h-6 w-6" />
-              <span className="font-bold text-xl">Triple B Truck Sales</span>
+              <span className="font-bold text-xl">Triple B Truck Leasing</span>
             </Link>
             <p className="mb-6">
-              Your trusted source for medium and light duty work trucks. Family owned and operated since 2005.
+              Your trusted source for medium and light duty work truck leasing. Family owned and operated since 2005.
             </p>
           </div>
 
@@ -77,7 +77,7 @@ export function SiteFooter() {
         </div>
 
         <div className="border-t border-gray-800 mt-12 pt-8 text-center text-sm">
-          <p>&copy; 2025 BBB Truck Sales. All rights reserved.</p>
+          <p>&copy; 2025 BBB Truck Leasing. All rights reserved.</p>
         </div>
       </div>
     </footer>

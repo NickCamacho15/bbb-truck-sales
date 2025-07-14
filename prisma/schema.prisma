@@ -22,29 +22,33 @@ model User {
 }
 
 model Truck {
-  id           String         @id @default(cuid())
-  title        String
-  price        Int
-  year         Int
-  make         String
-  model        String
-  trim         String
-  mileage      Int
-  fuelType     String
-  transmission String
-  drivetrain   String
-  color        String
-  vin          String         @unique
-  stockNumber  String         @unique
-  description  String
-  status       TruckStatus    @default(AVAILABLE)
-  featured     Boolean        @default(false)
-  createdAt    DateTime       @default(now())
-  updatedAt    DateTime       @updatedAt
-  inquiries    Inquiry[]
-  features     TruckFeature[]
-  images       TruckImage[]
-  truckViews   TruckView[]
+  id             String         @id @default(cuid())
+  title          String
+  price          Int
+  listingType    ListingType    @default(SALE) @map("listing_type")
+  monthlyPrice   Int?           @map("monthly_price") // Monthly lease price (only applicable for LEASE listings)
+  leaseTermMonths Int?          @map("lease_term_months") // Lease term in months (only applicable for LEASE listings)
+  downPayment    Int?           @map("down_payment") // Down payment amount (only applicable for LEASE listings)
+  year           Int
+  make           String
+  model          String
+  trim           String
+  mileage        Int
+  fuelType       String
+  transmission   String
+  drivetrain     String
+  color          String
+  vin            String         @unique
+  stockNumber    String         @unique
+  description    String
+  status         TruckStatus    @default(AVAILABLE)
+  featured       Boolean        @default(false)
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+  inquiries      Inquiry[]
+  features       TruckFeature[]
+  images         TruckImage[]
+  truckViews     TruckView[]
 
   @@map("trucks")
 }
@@ -123,6 +127,13 @@ enum TruckStatus {
   AVAILABLE
   PENDING_SALE
   SOLD
+}
+
+enum ListingType {
+  SALE
+  LEASE
+
+  @@map("listing_type")
 }
 
 enum InquiryType {

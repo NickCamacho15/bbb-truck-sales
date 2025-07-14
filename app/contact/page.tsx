@@ -70,14 +70,14 @@ export default function ContactPage() {
 
       {/* Call to Action */}
       <div className="bg-blue-600 text-white rounded-lg p-8 text-center">
-        <h2 className="text-3xl font-bold mb-4">Ready to Find Your Perfect Work Truck?</h2>
+        <h2 className="text-3xl font-bold mb-4">Ready to Lease Your Perfect Work Truck?</h2>
         <p className="text-xl mb-8 max-w-2xl mx-auto">
-          Visit our dealership today or browse our online inventory to find the medium or light duty truck that fits
-          your business needs.
+          Visit our dealership today or browse our online inventory to find the medium or light duty truck 
+          with flexible leasing options that fit your business needs.
         </p>
         <Link href="/inventory">
           <Button size="lg" variant="secondary">
-            Browse Inventory
+            Browse Lease Inventory
           </Button>
         </Link>
       </div>
@@ -121,8 +121,8 @@ function ContactForm() {
         setIsLoadingTrucks(true)
         setTrucksError(null)
         
-        // Fetch only available trucks
-        const response = await fetch('/api/trucks?status=AVAILABLE')
+        // Fetch only available lease trucks
+        const response = await fetch('/api/trucks?status=AVAILABLE&listingType=LEASE')
         
         if (!response.ok) {
           throw new Error('Failed to fetch trucks')
@@ -279,19 +279,19 @@ function ContactForm() {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="GENERAL">General Inquiry</SelectItem>
-            <SelectItem value="SALES">Sales Inquiry</SelectItem>
+            <SelectItem value="SALES">Lease Inquiry</SelectItem>
           </SelectContent>
         </Select>
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="truckId">Interested in a specific truck?</Label>
+        <Label htmlFor="truckId">Interested in a specific truck for lease?</Label>
         <Select 
           value={formData.truckId} 
           onValueChange={(value) => handleSelectChange("truckId", value)}
         >
           <SelectTrigger id="truckId">
-            <SelectValue placeholder={isLoadingTrucks ? "Loading available trucks..." : "Select a truck (optional)"} />
+            <SelectValue placeholder={isLoadingTrucks ? "Loading available lease trucks..." : "Select a lease truck (optional)"} />
           </SelectTrigger>
           <SelectContent>
             {trucksError ? (
@@ -299,10 +299,10 @@ function ContactForm() {
             ) : isLoadingTrucks ? (
               <SelectItem value="loading" disabled>Loading trucks...</SelectItem>
             ) : trucks.length === 0 ? (
-              <SelectItem value="empty" disabled>No trucks currently available</SelectItem>
+              <SelectItem value="empty" disabled>No lease trucks currently available</SelectItem>
             ) : (
               <>
-                <SelectItem value="none">Not interested in a specific truck</SelectItem>
+                <SelectItem value="none">Not interested in a specific lease truck</SelectItem>
                 {trucks.map((truck) => (
                   <SelectItem key={truck.id} value={truck.id}>
                     {formatTruckOption(truck)}

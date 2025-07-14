@@ -12,15 +12,21 @@ interface UploadedImage {
 }
 
 interface ImageUploadProps {
-  images: string[]
-  onImagesChange: (images: string[]) => void
+  images?: string[]
+  onImagesChange?: (images: string[]) => void
+  value?: string[]
+  onChange?: (images: string[]) => void
+  onRemove?: (url: string) => void
   maxImages?: number
   maxFileSize?: number // in MB
 }
 
 export function ImageUpload({ 
   images, 
-  onImagesChange, 
+  onImagesChange,
+  value = [],
+  onChange,
+  onRemove,
   maxImages = 1000,
   maxFileSize = 5 
 }: ImageUploadProps) {
@@ -28,13 +34,23 @@ export function ImageUpload({
   const [dragActive, setDragActive] = useState(false)
   const [uploadProgress, setUploadProgress] = useState<Record<string, number>>({})
   const fileInputRef = useRef<HTMLInputElement>(null)
+  
+  // Use either value/onChange or images/onImagesChange
+  const imageList = value.length > 0 ? value : (images || [])
+  const updateImages = (newImages: string[]) => {
+    if (onChange) {
+      onChange(newImages)
+    } else if (onImagesChange) {
+      onImagesChange(newImages)
+    }
+  }
 
   const handleFiles = async (files: FileList) => {
     if (files.length === 0) return
 
     // Check if adding these files would exceed max images
-    if (images.length + files.length > maxImages) {
-      alert(`Maximum ${maxImages} images allowed. You can add ${maxImages - images.length} more.`)
+    if (imageList.length + files.length > maxImages) {
+      alert(`Maximum ${maxImages} images allowed. You can add ${maxImages - imageList.length} more.`)
       return
     }
 
@@ -61,7 +77,7 @@ export function ImageUpload({
       if (result.success && result.uploadedImages) {
         // Add new image URLs to existing images
         const newImageUrls = result.uploadedImages.map((img: UploadedImage) => img.url)
-        onImagesChange([...images, ...newImageUrls])
+        updateImages([...imageList, ...newImageUrls])
 
         if (result.errors && result.errors.length > 0) {
           console.error('Some uploads failed:', result.errors)
@@ -106,16 +122,22 @@ export function ImageUpload({
   }
 
   const removeImage = (index: number) => {
-    const newImages = [...images]
+    const newImages = [...imageList]
+    const removedUrl = newImages[index]
     newImages.splice(index, 1)
-    onImagesChange(newImages)
+    updateImages(newImages)
+    
+    // Call onRemove if provided
+    if (onRemove && removedUrl) {
+      onRemove(removedUrl)
+    }
   }
 
   const moveImage = (fromIndex: number, toIndex: number) => {
-    const newImages = [...images]
+    const newImages = [...imageList]
     const [movedImage] = newImages.splice(fromIndex, 1)
     newImages.splice(toIndex, 0, movedImage)
-    onImagesChange(newImages)
+    updateImages(newImages)
   }
 
   return (
@@ -152,7 +174,7 @@ export function ImageUpload({
               </p>
               <Button 
                 onClick={() => fileInputRef.current?.click()}
-                disabled={uploading || images.length >= maxImages}
+                disabled={uploading || imageList.length >= maxImages}
               >
                 <Upload className="h-4 w-4 mr-2" />
                 Select Images
@@ -173,9 +195,9 @@ export function ImageUpload({
       />
 
       {/* Image Preview Grid */}
-      {images.length > 0 && (
+      {imageList.length > 0 && (
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-          {images.map((imageUrl, index) => (
+          {imageList.map((imageUrl, index) => (
             <Card key={index} className="relative group overflow-hidden">
               <div className="aspect-square relative">
                 <img
@@ -205,7 +227,7 @@ export function ImageUpload({
       )}
 
       {/* Requirements Info */}
-      {images.length < 3 && (
+      {imageList.length < 3 && (
         <div className="flex items-start space-x-2 p-4 bg-blue-50 rounded-lg">
           <ImageIcon className="h-5 w-5 text-blue-500 mt-0.5" />
           <div className="text-sm">
