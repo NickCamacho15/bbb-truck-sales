@@ -6,7 +6,7 @@ export default function Home() {
     <main className="flex flex-col min-h-screen">
       <HeroSection />
       <section className="container mx-auto py-16">
-        <h2 className="text-3xl font-bold mb-8 text-center">Featured Trucks for Lease</h2>
+        <h2 className="text-3xl font-bold mb-8 text-center">Featured Trucks for Sale</h2>
         <FeaturedTrucks />
       </section>
       <section className="bg-gray-50 py-16 dark:bg-gray-800">

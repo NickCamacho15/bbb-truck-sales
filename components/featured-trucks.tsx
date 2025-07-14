@@ -60,7 +60,7 @@ export default function FeaturedTrucks() {
         setLoading(true)
         setError(null)
         
-        const response = await fetch('/api/trucks?featured=true&listingType=LEASE&limit=3')
+        const response = await fetch('/api/trucks?featured=true&listingType=SALE&limit=3')
         if (!response.ok) {
           throw new Error('Failed to fetch featured trucks')
         }
@@ -131,18 +131,8 @@ export default function FeaturedTrucks() {
                 <div className="flex flex-col">
                   <div className="flex items-center">
                     <DollarSign className="h-4 w-4 text-gray-500 mr-1" />
-                    <span className="font-bold text-lg">${truck.monthlyPrice?.toLocaleString()}/mo</span>
+                    <span className="font-bold text-lg">${truck.price.toLocaleString()}</span>
                   </div>
-                  {truck.downPayment && truck.downPayment > 0 && (
-                    <div className="text-sm text-gray-600">
-                      ${truck.downPayment.toLocaleString()} down
-                    </div>
-                  )}
-                  {truck.leaseTermMonths && truck.leaseTermMonths > 0 && (
-                    <div className="text-sm text-gray-600">
-                      {truck.leaseTermMonths} month term
-                    </div>
-                  )}
                 </div>
                 <div className="flex items-center">
                   <Truck className="h-4 w-4 text-gray-500 mr-1" />

@@ -73,8 +73,8 @@ export default function InventoryPage() {
       setLoading(true)
       setError(null)
       
-      // Only get available LEASE trucks for public site
-      const response = await fetch('/api/trucks?status=AVAILABLE&listingType=LEASE&limit=50')
+      // Only get available SALE trucks for public site
+      const response = await fetch('/api/trucks?status=AVAILABLE&listingType=SALE&limit=50')
       if (!response.ok) {
         throw new Error('Failed to fetch trucks')
       }
@@ -313,18 +313,8 @@ export default function InventoryPage() {
                     <div className="flex flex-col">
                       <div className="flex items-center">
                         <DollarSign className="h-4 w-4 text-gray-500 mr-1" />
-                        <span className="font-bold text-lg">${truck.monthlyPrice?.toLocaleString()}/mo</span>
+                        <span className="font-bold text-lg">${truck.price.toLocaleString()}</span>
                       </div>
-                      {truck.downPayment && truck.downPayment > 0 && (
-                        <div className="text-sm text-gray-600">
-                          ${truck.downPayment.toLocaleString()} down
-                        </div>
-                      )}
-                      {truck.leaseTermMonths && truck.leaseTermMonths > 0 && (
-                        <div className="text-sm text-gray-600">
-                          {truck.leaseTermMonths} month term
-                        </div>
-                      )}
                     </div>
                     <div className="flex items-center">
                       <Truck className="h-4 w-4 text-gray-500 mr-1" />

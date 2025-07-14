@@ -243,10 +243,10 @@ export default function TruckDetailPage({ params }: { params: Promise<{ id: stri
                 {selectedImageIndex + 1} / {truckImages.length}
               </div>
             )}
-            {/* Lease badge */}
-            {truck.listingType === "LEASE" && (
-              <div className="absolute top-4 left-4 bg-green-600 text-white font-medium px-3 py-1 rounded-md">
-                For Lease
+            {/* Sale badge */}
+            {truck.listingType === "SALE" && (
+              <div className="absolute top-4 left-4 bg-blue-600 text-white font-medium px-3 py-1 rounded-md">
+                For Sale
               </div>
             )}
           </div>
@@ -284,29 +284,10 @@ export default function TruckDetailPage({ params }: { params: Promise<{ id: stri
             <h1 className="text-2xl font-bold mb-2">{truck.title}</h1>
             
             {/* Price information */}
-            {truck.listingType === "LEASE" ? (
-              <div className="mb-4">
-                <div className="flex items-center">
-                  <DollarSign className="h-6 w-6 text-green-600 mr-1" />
-                  <span className="text-3xl font-bold text-green-600">${truck.monthlyPrice?.toLocaleString()}/mo</span>
-                </div>
-                {truck.downPayment && truck.downPayment > 0 && (
-                  <div className="text-muted-foreground mt-1">
-                    ${truck.downPayment.toLocaleString()} down payment
-                  </div>
-                )}
-                {truck.leaseTermMonths && (
-                  <div className="text-muted-foreground text-sm">
-                    {truck.leaseTermMonths} month lease term
-                  </div>
-                )}
-              </div>
-            ) : (
-              <div className="flex items-center mb-4">
-                <DollarSign className="h-6 w-6 text-green-600 mr-1" />
-                <span className="text-3xl font-bold text-green-600">${truck.price.toLocaleString()}</span>
-              </div>
-            )}
+            <div className="flex items-center mb-4">
+              <DollarSign className="h-6 w-6 text-green-600 mr-1" />
+              <span className="text-3xl font-bold text-green-600">{truck.price.toLocaleString()}</span>
+            </div>
 
             {/* Status Badge */}
             <div className="mb-4">
@@ -399,17 +380,14 @@ export default function TruckDetailPage({ params }: { params: Promise<{ id: stri
                 <>
                   <Link href={`/contact?truck=${truck.id}`} className="block w-full cursor-pointer">
                     <Button className="w-full text-lg py-6 transition-all duration-300 hover:scale-[1.02] hover:shadow-lg cursor-pointer">
-                      {truck.listingType === "LEASE" 
-                        ? "Inquire About Leasing This Truck" 
-                        : "Contact About This Truck"}
+                      Contact About This Truck
                     </Button>
                   </Link>
                 </>
               ) : (
                 <>
                   <Button disabled className="w-full text-lg py-6">
-                    {truck.status === 'PENDING_SALE' ? 'Sale Pending' : 
-                     (truck.status === 'SOLD' && truck.listingType === 'LEASE') ? 'Leased' : 'Sold'}
+                    {truck.status === 'PENDING_SALE' ? 'Sale Pending' : 'Sold'}
                   </Button>
                 </>
               )}
