@@ -117,11 +117,11 @@ export default function InventoryPage() {
 
       // Price filter
       const matchesPrice = priceFilter === "any" ||
-        (priceFilter === "under-300" && truck.monthlyPrice < 300) ||
-        (priceFilter === "300-500" && truck.monthlyPrice >= 300 && truck.monthlyPrice < 500) ||
-        (priceFilter === "500-700" && truck.monthlyPrice >= 500 && truck.monthlyPrice < 700) ||
-        (priceFilter === "700-1000" && truck.monthlyPrice >= 700 && truck.monthlyPrice < 1000) ||
-        (priceFilter === "over-1000" && truck.monthlyPrice >= 1000);
+        (priceFilter === "under-300" && truck.price < 30000) ||
+        (priceFilter === "300-500" && truck.price >= 30000 && truck.price < 50000) ||
+        (priceFilter === "500-700" && truck.price >= 50000 && truck.price < 70000) ||
+        (priceFilter === "700-1000" && truck.price >= 70000 && truck.price < 100000) ||
+        (priceFilter === "over-1000" && truck.price >= 100000);
 
       return matchesSearch && matchesMileage && matchesYear && matchesPrice;
     }).sort((a, b) => {
@@ -132,9 +132,9 @@ export default function InventoryPage() {
         case "oldest":
           return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
         case "price-low":
-          return (a.monthlyPrice || 0) - (b.monthlyPrice || 0);
+          return a.price - b.price;
         case "price-high":
-          return (b.monthlyPrice || 0) - (a.monthlyPrice || 0);
+          return b.price - a.price;
         case "mileage-low":
           return a.mileage - b.mileage;
         default:
@@ -172,7 +172,7 @@ export default function InventoryPage() {
 
   return (
     <div className="container mx-auto py-8 px-4 md:px-6">
-      <h1 className="text-3xl font-bold mb-6">Our Trucks for Lease</h1>
+      <h1 className="text-3xl font-bold mb-6">Our Trucks for Sale</h1>
 
       {/* Filters */}
       <div className="bg-muted rounded-lg p-4 mb-8">
@@ -235,7 +235,7 @@ export default function InventoryPage() {
           </div>
           <div>
             <label htmlFor="price" className="text-sm font-medium mb-1 block">
-              Monthly Payment
+              Price Range
             </label>
             <Select value={priceFilter} onValueChange={setPriceFilter}>
               <SelectTrigger id="price">
@@ -243,11 +243,11 @@ export default function InventoryPage() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="any">Any Price</SelectItem>
-                <SelectItem value="under-300">Under $300/mo</SelectItem>
-                <SelectItem value="300-500">$300 - $500/mo</SelectItem>
-                <SelectItem value="500-700">$500 - $700/mo</SelectItem>
-                <SelectItem value="700-1000">$700 - $1000/mo</SelectItem>
-                <SelectItem value="over-1000">Over $1000/mo</SelectItem>
+                <SelectItem value="under-300">Under $30,000</SelectItem>
+                <SelectItem value="300-500">$30,000 - $50,000</SelectItem>
+                <SelectItem value="500-700">$50,000 - $70,000</SelectItem>
+                <SelectItem value="700-1000">$70,000 - $100,000</SelectItem>
+                <SelectItem value="over-1000">Over $100,000</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -267,8 +267,8 @@ export default function InventoryPage() {
           <SelectContent>
             <SelectItem value="newest">Newest First</SelectItem>
             <SelectItem value="oldest">Oldest First</SelectItem>
-            <SelectItem value="price-low">Monthly Payment: Low to High</SelectItem>
-            <SelectItem value="price-high">Monthly Payment: High to Low</SelectItem>
+            <SelectItem value="price-low">Price: Low to High</SelectItem>
+            <SelectItem value="price-high">Price: High to Low</SelectItem>
             <SelectItem value="mileage-low">Mileage: Low to High</SelectItem>
           </SelectContent>
         </Select>
