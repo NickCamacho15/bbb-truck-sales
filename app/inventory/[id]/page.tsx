@@ -378,7 +378,7 @@ export default function TruckDetailPage({ params }: { params: Promise<{ id: stri
             <div className="space-y-3">
               {truck.status === 'AVAILABLE' ? (
                 <>
-                  <Link href={`/contact?truck=${truck.id}`} className="block w-full cursor-pointer">
+                  <Link href={`/contact?truck=${encodeURIComponent(truck.id)}`} className="block w-full cursor-pointer" passHref>
                     <Button className="w-full text-lg py-6 transition-all duration-300 hover:scale-[1.02] hover:shadow-lg cursor-pointer">
                       Contact About This Truck
                     </Button>

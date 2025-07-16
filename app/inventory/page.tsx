@@ -341,7 +341,7 @@ export default function InventoryPage() {
                 <CardFooter className="p-4 pt-0 flex justify-between">
                   <Button variant="outline">View Details</Button>
                   <div onClick={(e) => e.stopPropagation()}>
-                    <Link href={`/contact?truck=${truck.id}`}>
+                    <Link href={`/contact?truck=${encodeURIComponent(truck.id)}`} passHref>
                       <Button>Inquire Now</Button>
                     </Link>
                   </div>

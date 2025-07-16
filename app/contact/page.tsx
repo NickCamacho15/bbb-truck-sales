@@ -121,6 +121,9 @@ function ContactForm() {
         setIsLoadingTrucks(true)
         setTrucksError(null)
         
+        // Debug logging for URL parameters
+        console.log("URL Params:", { truckId: truckIdFromUrl })
+        
         // Fetch only available sale trucks
         const response = await fetch('/api/trucks?status=AVAILABLE&listingType=SALE')
         
@@ -133,9 +136,12 @@ function ContactForm() {
 
         // If a truck ID is provided in the URL, preselect it
         if (truckIdFromUrl) {
+          console.log("Setting truck ID from URL:", truckIdFromUrl)
+          // Ensure any URL encoding is handled
+          const cleanTruckId = decodeURIComponent(truckIdFromUrl.trim())
           setFormData(prev => ({
             ...prev,
-            truckId: truckIdFromUrl,
+            truckId: cleanTruckId,
             inquiryType: 'SALES' // Auto-select sales inquiry type
           }))
         }
@@ -149,6 +155,13 @@ function ContactForm() {
 
     fetchTrucks()
   }, [truckIdFromUrl])
+
+  // Debug useEffect to track formData changes
+  useEffect(() => {
+    if (formData.truckId) {
+      console.log("Form data truck ID set to:", formData.truckId)
+    }
+  }, [formData.truckId])
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { id, value } = e.target
