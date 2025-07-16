@@ -121,9 +121,6 @@ function ContactForm() {
         setIsLoadingTrucks(true)
         setTrucksError(null)
         
-        // Debug logging for URL parameters
-        console.log("URL Params:", { truckId: truckIdFromUrl })
-        
         // Fetch only available sale trucks
         const response = await fetch('/api/trucks?status=AVAILABLE&listingType=SALE')
         
@@ -133,18 +130,6 @@ function ContactForm() {
         
         const data = await response.json()
         setTrucks(data.trucks || [])
-
-        // If a truck ID is provided in the URL, preselect it
-        if (truckIdFromUrl) {
-          console.log("Setting truck ID from URL:", truckIdFromUrl)
-          // Ensure any URL encoding is handled
-          const cleanTruckId = decodeURIComponent(truckIdFromUrl.trim())
-          setFormData(prev => ({
-            ...prev,
-            truckId: cleanTruckId,
-            inquiryType: 'SALES' // Auto-select sales inquiry type
-          }))
-        }
       } catch (err) {
         console.error('Error fetching trucks:', err)
         setTrucksError('Failed to load available trucks')
@@ -156,12 +141,26 @@ function ContactForm() {
     fetchTrucks()
   }, [truckIdFromUrl])
 
-  // Debug useEffect to track formData changes
+  // Separate effect to handle truck selection after trucks are loaded
   useEffect(() => {
-    if (formData.truckId) {
-      console.log("Form data truck ID set to:", formData.truckId)
+    // Only proceed if we have a truck ID from URL and trucks are loaded
+    if (truckIdFromUrl && !isLoadingTrucks && trucks.length > 0) {
+      // Clean the truck ID from URL
+      const cleanTruckId = decodeURIComponent(truckIdFromUrl.trim())
+      
+      // Check if this truck exists in our loaded trucks
+      const truckExists = trucks.some(truck => truck.id === cleanTruckId)
+      
+      if (truckExists) {
+        // Set the form data with the truck ID
+        setFormData(prev => ({
+          ...prev,
+          truckId: cleanTruckId,
+          inquiryType: 'SALES' // Auto-select sales inquiry type
+        }))
+      }
     }
-  }, [formData.truckId])
+  }, [truckIdFromUrl, trucks, isLoadingTrucks])
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { id, value } = e.target
@@ -177,6 +176,9 @@ function ContactForm() {
     setIsSubmitting(true)
     setFormStatus('idle')
 
+    // Get the truck ID from either form data or URL
+    const effectiveTruckId = formData.truckId || truckIdFromUrl || undefined
+
     try {
       const response = await fetch('/api/inquiries', {
         method: 'POST',
@@ -189,7 +191,7 @@ function ContactForm() {
           phone: formData.phone,
           inquiryType: formData.inquiryType || 'GENERAL',
           message: formData.message,
-          truckId: formData.truckId && !['none', 'error', 'loading', 'empty'].includes(formData.truckId) ? formData.truckId : undefined,
+          truckId: effectiveTruckId && !['none', 'error', 'loading', 'empty'].includes(effectiveTruckId) ? effectiveTruckId : undefined,
         }),
       })
 
@@ -302,6 +304,7 @@ function ContactForm() {
         <Select 
           value={formData.truckId} 
           onValueChange={(value) => handleSelectChange("truckId", value)}
+          key={`truck-select-${formData.truckId || 'none'}`}
         >
           <SelectTrigger id="truckId">
             <SelectValue placeholder={isLoadingTrucks ? "Loading available trucks for sale..." : "Select a truck (optional)"} />
