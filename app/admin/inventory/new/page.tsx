@@ -124,24 +124,29 @@ export default function NewTruckPage() {
     }
 
     setActiveTab(value)
+    // Scroll to top of page
+    window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
   const handleNextTab = () => {
     if (activeTab === "details") {
       if (validateDetailsTab()) {
         setActiveTab("images")
+        window.scrollTo({ top: 0, behavior: 'smooth' })
       } else {
         alert("Please fill out all required fields before proceeding.")
       }
     } else if (activeTab === "images") {
       if (validateImagesTab()) {
         setActiveTab("features")
+        window.scrollTo({ top: 0, behavior: 'smooth' })
       } else {
         alert("Please upload at least 3 images before proceeding.")
       }
     } else if (activeTab === "features") {
       if (validateFeaturesTab()) {
         setActiveTab("review")
+        window.scrollTo({ top: 0, behavior: 'smooth' })
       } else {
         alert("Please add at least 3 features before proceeding.")
       }
@@ -152,6 +157,8 @@ export default function NewTruckPage() {
     if (activeTab === "images") setActiveTab("details")
     else if (activeTab === "features") setActiveTab("images")
     else if (activeTab === "review") setActiveTab("features")
+    // Scroll to top of page
+    window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
   const handleInputChange = (field: string, value: string) => {
@@ -356,6 +363,7 @@ export default function NewTruckPage() {
                   <CardTitle>Truck Details</CardTitle>
                   <CardDescription>
                     Enter all the information about the truck.
+                    <span className="block text-rose-500 mt-1">* indicates a required field</span>
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-8">
@@ -364,56 +372,61 @@ export default function NewTruckPage() {
                     <h3 className="text-lg font-medium mb-4">Basic Information</h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="space-y-2">
-                        <Label htmlFor="title">Listing Title</Label>
+                        <Label htmlFor="title">Listing Title *</Label>
                         <Input 
                           id="title" 
                           placeholder="e.g. 2022 Ford F-150 XLT" 
                           value={formData.title}
                           onChange={(e) => handleInputChange('title', e.target.value)}
+                          required
                         />
                       </div>
 
                       {listingType === "SALE" ? (
                         <div className="space-y-2">
-                          <Label htmlFor="price">Sale Price ($)</Label>
+                          <Label htmlFor="price">Sale Price ($) *</Label>
                           <Input 
                             id="price" 
                             type="number" 
                             placeholder="e.g. 45000" 
                             value={formData.price}
                             onChange={(e) => handleInputChange('price', e.target.value)}
+                            required
                           />
                         </div>
                       ) : (
                         <>
                           <div className="space-y-2">
-                            <Label htmlFor="monthlyPrice">Monthly Lease Price ($)</Label>
+                            <Label htmlFor="monthlyPrice">Monthly Lease Price ($) *</Label>
                             <Input 
                               id="monthlyPrice" 
                               type="number" 
                               placeholder="e.g. 550" 
                               value={formData.monthlyPrice}
                               onChange={(e) => handleInputChange('monthlyPrice', e.target.value)}
+                              required
                             />
                           </div>
                           <div className="space-y-2">
-                            <Label htmlFor="downPayment">Down Payment ($)</Label>
+                            <Label htmlFor="downPayment">Down Payment ($) *</Label>
                             <Input 
                               id="downPayment" 
                               type="number" 
                               placeholder="e.g. 2500" 
                               value={formData.downPayment}
                               onChange={(e) => handleInputChange('downPayment', e.target.value)}
+                              required
                             />
                           </div>
                           <div className="space-y-2">
-                            <Label htmlFor="leaseTermMonths">Lease Term (months)</Label>
+                            <Label htmlFor="leaseTermMonths">Lease Term (months) *</Label>
                             <Input 
                               id="leaseTermMonths" 
                               type="number" 
                               placeholder="e.g. 36" 
                               value={formData.leaseTermMonths}
                               onChange={(e) => handleInputChange('leaseTermMonths', e.target.value)}
+                              required
                             />
                           </div>
                         </>
@@ -426,66 +439,73 @@ export default function NewTruckPage() {
                     <h3 className="text-lg font-medium mb-4">Vehicle Information</h3>
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                       <div className="space-y-2">
-                        <Label htmlFor="year">Year</Label>
+                        <Label htmlFor="year">Year *</Label>
                         <Input 
                           id="year" 
                           type="number" 
                           placeholder="e.g. 2022" 
                           value={formData.year}
                           onChange={(e) => handleInputChange('year', e.target.value)}
+                          required
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="make">Make</Label>
+                        <Label htmlFor="make">Make *</Label>
                         <Input 
                           id="make" 
                           placeholder="e.g. Ford" 
                           value={formData.make}
                           onChange={(e) => handleInputChange('make', e.target.value)}
+                          required
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="model">Model</Label>
+                        <Label htmlFor="model">Model *</Label>
                         <Input 
                           id="model" 
                           placeholder="e.g. F-150" 
                           value={formData.model}
                           onChange={(e) => handleInputChange('model', e.target.value)}
+                          required
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="trim">Trim</Label>
+                        <Label htmlFor="trim">Trim *</Label>
                         <Input 
                           id="trim" 
                           placeholder="e.g. XLT" 
                           value={formData.trim}
                           onChange={(e) => handleInputChange('trim', e.target.value)}
+                          required
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="mileage">Mileage</Label>
+                        <Label htmlFor="mileage">Mileage *</Label>
                         <Input 
                           id="mileage" 
                           type="number" 
                           placeholder="e.g. 15000" 
                           value={formData.mileage}
                           onChange={(e) => handleInputChange('mileage', e.target.value)}
+                          required
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="color">Color</Label>
+                        <Label htmlFor="color">Color *</Label>
                         <Input 
                           id="color" 
                           placeholder="e.g. Oxford White" 
                           value={formData.color}
                           onChange={(e) => handleInputChange('color', e.target.value)}
+                          required
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="fuelType">Fuel Type</Label>
+                        <Label htmlFor="fuelType">Fuel Type *</Label>
                         <Select 
                           value={formData.fuelType} 
                           onValueChange={(value) => handleInputChange('fuelType', value)}
+                          required
                         >
                           <SelectTrigger id="fuelType">
                             <SelectValue placeholder="Select fuel type" />
@@ -499,10 +519,11 @@ export default function NewTruckPage() {
                         </Select>
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="transmission">Transmission</Label>
+                        <Label htmlFor="transmission">Transmission *</Label>
                         <Select 
                           value={formData.transmission} 
                           onValueChange={(value) => handleInputChange('transmission', value)}
+                          required
                         >
                           <SelectTrigger id="transmission">
                             <SelectValue placeholder="Select transmission" />
@@ -515,10 +536,11 @@ export default function NewTruckPage() {
                         </Select>
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="drivetrain">Drivetrain</Label>
+                        <Label htmlFor="drivetrain">Drivetrain *</Label>
                         <Select 
                           value={formData.drivetrain} 
                           onValueChange={(value) => handleInputChange('drivetrain', value)}
+                          required
                         >
                           <SelectTrigger id="drivetrain">
                             <SelectValue placeholder="Select drivetrain" />
@@ -539,32 +561,35 @@ export default function NewTruckPage() {
                     <h3 className="text-lg font-medium mb-4">Additional Information</h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                       <div className="space-y-2">
-                        <Label htmlFor="vin">VIN</Label>
+                        <Label htmlFor="vin">VIN *</Label>
                         <Input 
                           id="vin" 
                           placeholder="e.g. 1FT8W3BT6NED27245" 
                           value={formData.vin}
                           onChange={(e) => handleInputChange('vin', e.target.value)}
+                          required
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="stockNumber">Stock Number</Label>
+                        <Label htmlFor="stockNumber">Stock Number *</Label>
                         <Input 
                           id="stockNumber" 
                           placeholder="e.g. T12345" 
                           value={formData.stockNumber}
                           onChange={(e) => handleInputChange('stockNumber', e.target.value)}
+                          required
                         />
                       </div>
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="description">Description</Label>
+                      <Label htmlFor="description">Description *</Label>
                       <Textarea 
                         id="description" 
                         placeholder="Enter a detailed description of the truck..." 
                         rows={5}
                         value={formData.description}
                         onChange={(e) => handleInputChange('description', e.target.value)}
+                        required
                       />
                     </div>
                   </div>
@@ -585,6 +610,7 @@ export default function NewTruckPage() {
                   <CardTitle>Truck Images</CardTitle>
                   <CardDescription>
                     Upload images of the truck. The first image will be used as the main image.
+                    <span className="text-rose-500 font-medium"> * At least 3 images required.</span>
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -620,6 +646,7 @@ export default function NewTruckPage() {
                   <CardTitle>Truck Features</CardTitle>
                   <CardDescription>
                     Add features and specifications for this truck.
+                    <span className="text-rose-500 font-medium"> * At least 3 features required.</span>
                   </CardDescription>
                 </CardHeader>
                 <CardContent>

@@ -84,12 +84,7 @@ export default function AdminLoginPage() {
                 />
               </div>
               <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <Label htmlFor="password">Password</Label>
-                  <Button variant="link" className="p-0 h-auto text-sm" type="button">
-                    Forgot password?
-                  </Button>
-                </div>
+                <Label htmlFor="password">Password</Label>
                 <Input
                   id="password"
                   type="password"

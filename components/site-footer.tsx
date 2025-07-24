@@ -66,11 +66,15 @@ export function SiteFooter() {
               </li>
               <li className="flex items-center gap-3 md:flex-row-reverse">
                 <Phone className="h-5 w-5 flex-shrink-0" />
-                <span>606-776-3999</span>
+                <a href="tel:606-776-3999" className="hover:text-blue-400 transition-colors">
+                  606-776-3999
+                </a>
               </li>
               <li className="flex items-center gap-3 md:flex-row-reverse">
                 <Mail className="h-5 w-5 flex-shrink-0" />
-                <span>parts@superdutyfordtruckparts.com</span>
+                <a href="mailto:parts@superdutyfordtruckparts.com" className="hover:text-blue-400 transition-colors">
+                  parts@superdutyfordtruckparts.com
+                </a>
               </li>
             </ul>
           </div>

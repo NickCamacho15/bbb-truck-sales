@@ -53,7 +53,7 @@ export default function TestimonialSlider() {
                   <p className="text-lg mb-6 italic">"{testimonial.quote}"</p>
                   <div>
                     <p className="font-semibold">{testimonial.name}</p>
-                    <p className="text-sm text-gray-500">{testimonial.location}</p>
+                    <p className="text-sm text-gray-500 dark:text-gray-200">{testimonial.location}</p>
                   </div>
                 </CardContent>
               </Card>

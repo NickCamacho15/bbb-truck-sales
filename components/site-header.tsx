@@ -184,16 +184,7 @@ export function SiteHeader() {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
-                  <DropdownMenuLabel>My Account</DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem>Profile</DropdownMenuItem>
-                  <DropdownMenuItem>
-                    <div className="flex items-center">
-                      <Settings className="mr-2 h-4 w-4" />
-                      Settings
-                    </div>
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
+                  <DropdownMenuLabel>User Menu</DropdownMenuLabel>
                   <DropdownMenuItem asChild>
                     <Link href="/admin">
                       <div className="flex items-center">

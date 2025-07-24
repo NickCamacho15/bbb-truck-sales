@@ -45,14 +45,14 @@ export default function ContactPage() {
               <Phone className="h-6 w-6 text-blue-600 flex-shrink-0" />
               <div>
                 <p className="font-medium text-xl mb-1">Phone</p>
-                <p className="text-lg">606-776-3999</p>
+                <a href="tel:606-776-3999" className="text-lg hover:text-blue-600 transition-colors">606-776-3999</a>
               </div>
             </div>
             <div className="flex items-center gap-4">
               <Mail className="h-6 w-6 text-blue-600 flex-shrink-0" />
               <div>
                 <p className="font-medium text-xl mb-1">Email</p>
-                <p className="text-lg">parts@superdutyfordtruckparts.com</p>
+                <a href="mailto:parts@superdutyfordtruckparts.com" className="text-lg hover:text-blue-600 transition-colors">parts@superdutyfordtruckparts.com</a>
               </div>
             </div>
             <div className="flex items-start gap-4">

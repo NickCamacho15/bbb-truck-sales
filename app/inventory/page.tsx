@@ -252,9 +252,6 @@ export default function InventoryPage() {
             </Select>
           </div>
         </div>
-        <div className="mt-4 flex justify-end">
-          <Button onClick={handleApplyFilters}>Apply Filters</Button>
-        </div>
       </div>
 
       {/* Results */}
@@ -312,16 +309,16 @@ export default function InventoryPage() {
                   <div className="flex justify-between mb-4">
                     <div className="flex flex-col">
                       <div className="flex items-center">
-                        <DollarSign className="h-4 w-4 text-gray-500 mr-1" />
+                        <DollarSign className="h-4 w-4 text-gray-500 dark:text-white mr-1" />
                         <span className="font-bold text-lg">{truck.price.toLocaleString()}</span>
                       </div>
                     </div>
                     <div className="flex items-center">
-                      <Truck className="h-4 w-4 text-gray-500 mr-1" />
+                      <Truck className="h-4 w-4 text-gray-500 dark:text-white mr-1" />
                       <span>{truck.mileage.toLocaleString()} mi</span>
                     </div>
                   </div>
-                  <div className="grid grid-cols-2 gap-2 text-sm text-gray-600">
+                  <div className="grid grid-cols-2 gap-2 text-sm text-gray-600 dark:text-white">
                     <div className="flex items-center">
                       <Calendar className="h-4 w-4 mr-1" />
                       <span>{truck.year}</span>

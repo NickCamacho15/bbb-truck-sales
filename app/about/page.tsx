@@ -39,7 +39,7 @@ export default function AboutPage() {
                   <ShieldCheck className="h-8 w-8 text-blue-600" />
                 </div>
                 <h3 className="text-2xl font-bold mb-4">A Place You Can Trust</h3>
-                <p className="text-gray-600 leading-relaxed">
+                <p className="text-gray-600 dark:text-white leading-relaxed">
                   We know that the truck industry has a reputation of overcharging and misleading customers.
                   To ensure we're a place you can trust, we operate with complete transparency. All of our trucks are 
                   priced fairly and we provide full vehicle history reports. Our goal is to build a relationship that lasts
@@ -56,7 +56,7 @@ export default function AboutPage() {
                   <Brain className="h-8 w-8 text-blue-600" />
                 </div>
                 <h3 className="text-2xl font-bold mb-4">Truck Experts</h3>
-                <p className="text-gray-600 leading-relaxed">
+                <p className="text-gray-600 dark:text-white leading-relaxed">
                   Our sales team undergoes extensive training when they join the team. They know every detail about the 
                   work trucks we sell, from specifications to capabilities. They also have continuing education to keep 
                   up with new truck models and features. This knowledge ensures you get the right truck for your needs.
@@ -72,7 +72,7 @@ export default function AboutPage() {
                   <Truck className="h-8 w-8 text-blue-600" />
                 </div>
                 <h3 className="text-2xl font-bold mb-4">Quality Trucks</h3>
-                <p className="text-gray-600 leading-relaxed">
+                <p className="text-gray-600 dark:text-white leading-relaxed">
                   We carefully inspect and select every truck in our inventory. When you purchase a truck from us, 
                   you can be confident you're getting a quality vehicle that will serve your business needs for years
                   to come. We stand behind every truck we sell with excellent after-sale support.
@@ -91,7 +91,7 @@ export default function AboutPage() {
           <div className="relative flex flex-col items-center text-center h-full">
             <div className="bg-blue-600 text-white text-3xl font-bold h-16 w-16 rounded-full flex items-center justify-center mb-6 mx-auto z-10">1</div>
             <h3 className="text-xl font-bold mb-4">Browse Our Inventory</h3>
-            <p className="text-gray-600">
+            <p className="text-gray-600 dark:text-white">
               Explore our selection of quality work trucks. Find the make, model, and specifications that match your business requirements.
             </p>
             <div className="hidden md:block absolute top-8 left-1/2 w-full h-1 bg-blue-200 -z-10"></div>
@@ -100,7 +100,7 @@ export default function AboutPage() {
           <div className="relative flex flex-col items-center text-center h-full">
             <div className="bg-blue-600 text-white text-3xl font-bold h-16 w-16 rounded-full flex items-center justify-center mb-6 mx-auto z-10">2</div>
             <h3 className="text-xl font-bold mb-4">Meet With Our Experts</h3>
-            <p className="text-gray-600">
+            <p className="text-gray-600 dark:text-white">
               Connect with our professionals who will answer any questions you have about the vehicles that interest you.
             </p>
             <div className="hidden md:block absolute top-8 left-1/2 w-full h-1 bg-blue-200 -z-10"></div>
@@ -109,7 +109,7 @@ export default function AboutPage() {
           <div className="flex flex-col items-center text-center h-full">
             <div className="bg-blue-600 text-white text-3xl font-bold h-16 w-16 rounded-full flex items-center justify-center mb-6 mx-auto">3</div>
             <h3 className="text-xl font-bold mb-4">Drive Away Happy</h3>
-            <p className="text-gray-600">
+            <p className="text-gray-600 dark:text-white">
               Complete your purchase and drive away in your perfect work truck.
             </p>
           </div>
