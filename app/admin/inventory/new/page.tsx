@@ -12,6 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { AdminHeader } from "@/components/admin-header"
 import { ArrowLeft, Check, ChevronRight, ImageIcon, Info, ListChecks, Save, Upload, X, Plus } from "lucide-react"
 import { ImageUpload } from "@/components/image-upload"
+import { smoothScrollToTop } from "@/utils/scroll"
 
 export default function NewTruckPage() {
   const router = useRouter()
@@ -125,28 +126,28 @@ export default function NewTruckPage() {
 
     setActiveTab(value)
     // Scroll to top of page
-    window.scrollTo({ top: 0, behavior: 'smooth' })
+    smoothScrollToTop()
   }
 
   const handleNextTab = () => {
     if (activeTab === "details") {
       if (validateDetailsTab()) {
         setActiveTab("images")
-        window.scrollTo({ top: 0, behavior: 'smooth' })
+        smoothScrollToTop()
       } else {
         alert("Please fill out all required fields before proceeding.")
       }
     } else if (activeTab === "images") {
       if (validateImagesTab()) {
         setActiveTab("features")
-        window.scrollTo({ top: 0, behavior: 'smooth' })
+        smoothScrollToTop()
       } else {
         alert("Please upload at least 3 images before proceeding.")
       }
     } else if (activeTab === "features") {
       if (validateFeaturesTab()) {
         setActiveTab("review")
-        window.scrollTo({ top: 0, behavior: 'smooth' })
+        smoothScrollToTop()
       } else {
         alert("Please add at least 3 features before proceeding.")
       }
@@ -158,7 +159,7 @@ export default function NewTruckPage() {
     else if (activeTab === "features") setActiveTab("images")
     else if (activeTab === "review") setActiveTab("features")
     // Scroll to top of page
-    window.scrollTo({ top: 0, behavior: 'smooth' })
+    smoothScrollToTop()
   }
 
   const handleInputChange = (field: string, value: string) => {
